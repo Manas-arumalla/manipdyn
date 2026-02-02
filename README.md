@@ -89,6 +89,3 @@ Based on UR5 industrial robot:
 - SciPy >= 1.7
 - Matplotlib >= 3.4
 
-## License
-
-MIT License
