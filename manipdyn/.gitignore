@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Editable-install / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Scratch render frames (keep curated demo assets in media/, ignore temp ones)
+media/_*.png
+media/*.tmp.*

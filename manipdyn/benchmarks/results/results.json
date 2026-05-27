@@ -1,0 +1,126 @@
+{
+  "controllers": [
+    {
+      "controller": "pid",
+      "success_rate": 1.0,
+      "final_err_mm": 0.22946716521449653,
+      "settle_s": 0.26133333333333336,
+      "rmse_mm": 73.73043678226081,
+      "effort": 6936.993240118991,
+      "peak_torque_nm": 875.3274153771426,
+      "compute_ms": 0.008015599877883991
+    },
+    {
+      "controller": "ctc",
+      "success_rate": 1.0,
+      "final_err_mm": 8.19509489136749e-13,
+      "settle_s": 0.22533333333333336,
+      "rmse_mm": 71.58543770548371,
+      "effort": 5965.924863821122,
+      "peak_torque_nm": 523.4380962375034,
+      "compute_ms": 0.013253644396576824
+    },
+    {
+      "controller": "lqr",
+      "success_rate": 1.0,
+      "final_err_mm": 1.8172061555633687e-08,
+      "settle_s": 0.34,
+      "rmse_mm": 80.44846573299043,
+      "effort": 2170.604123306406,
+      "peak_torque_nm": 351.69246780601435,
+      "compute_ms": 0.010230044556212509
+    },
+    {
+      "controller": "ilqr",
+      "success_rate": 1.0,
+      "final_err_mm": 0.010524130012231988,
+      "settle_s": 0.2853333333333333,
+      "rmse_mm": 75.02464436240452,
+      "effort": 2210.102763362143,
+      "peak_torque_nm": 219.66297063790023,
+      "compute_ms": 0.11966217769400424
+    },
+    {
+      "controller": "impedance",
+      "success_rate": 1.0,
+      "final_err_mm": 2.9277663679415435,
+      "settle_s": 0.546,
+      "rmse_mm": 71.08848536459224,
+      "effort": 4187.941806813804,
+      "peak_torque_nm": 485.66315918266287,
+      "compute_ms": 0.010248711170990849
+    },
+    {
+      "controller": "osc",
+      "success_rate": 1.0,
+      "final_err_mm": 0.007987795506181583,
+      "settle_s": 0.18200000000000002,
+      "rmse_mm": 67.25850116186326,
+      "effort": 6930.871654571652,
+      "peak_torque_nm": 796.8812050430103,
+      "compute_ms": 0.05069553307192917
+    },
+    {
+      "controller": "tsid",
+      "success_rate": 1.0,
+      "final_err_mm": 0.024606759534955586,
+      "settle_s": 0.19599999999999998,
+      "rmse_mm": 66.57612514646446,
+      "effort": 2282.1489340896733,
+      "peak_torque_nm": 232.787779014752,
+      "compute_ms": 1.5721254887919514
+    },
+    {
+      "controller": "mppi",
+      "success_rate": 1.0,
+      "final_err_mm": 8.94518733442179,
+      "settle_s": 1.2113333333333334,
+      "rmse_mm": 148.471213706763,
+      "effort": 1760.5695483999134,
+      "peak_torque_nm": 75.73874389512491,
+      "compute_ms": 22.521312466547695
+    }
+  ],
+  "planners": [
+    {
+      "planner": "rrt",
+      "success_rate": 1.0,
+      "plan_time_s": 0.010435320000397041,
+      "path_len_rad": 1.6049338428732818,
+      "raw_nodes": 13.4,
+      "collision_free": true
+    },
+    {
+      "planner": "rrt_connect",
+      "success_rate": 1.0,
+      "plan_time_s": 0.0008843999938108027,
+      "path_len_rad": 1.6049338428732818,
+      "raw_nodes": 10.4,
+      "collision_free": true
+    },
+    {
+      "planner": "rrt_star",
+      "success_rate": 1.0,
+      "plan_time_s": 2.5358528000011575,
+      "path_len_rad": 1.6049338428732818,
+      "raw_nodes": 5.6,
+      "collision_free": true
+    },
+    {
+      "planner": "informed_rrt_star",
+      "success_rate": 1.0,
+      "plan_time_s": 13.195562259998406,
+      "path_len_rad": 1.6049338428732818,
+      "raw_nodes": 5.8,
+      "collision_free": true
+    },
+    {
+      "planner": "prm",
+      "success_rate": 1.0,
+      "plan_time_s": 4.543593979999423,
+      "path_len_rad": 1.6049338428732818,
+      "raw_nodes": 3.4,
+      "collision_free": true
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "manipdyn"
+version = "0.1.0"
+description = "A MuJoCo-physics lab for 6-DOF manipulator planning and control: a benchmarked zoo of planners and controllers on the UR5e."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Manas Reddy" }]
+keywords = ["robotics", "manipulator", "mujoco", "control", "motion-planning", "ur5e"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "mujoco>=3.0",
+    "matplotlib>=3.6",
+    "imageio>=2.30",
+    "osqp>=0.6",          # constrained QP for TSID
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.5"]
+video = ["imageio-ffmpeg>=0.4"]
+rl = ["gymnasium>=0.29", "stable-baselines3>=2.0", "torch>=2.0"]
+docs = ["mkdocs-material>=9.0"]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[project.scripts]
+manipdyn = "manipdyn.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"manipdyn.models" = ["*.xml", "ur5e_model/*", "ur5e_model/assets/*"]
+"manipdyn.tuning" = ["*.json"]
+"manipdyn.rl" = ["*.zip"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "ignore::PendingDeprecationWarning:osqp",
+]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_unused_ignores = true
+files = ["src/manipdyn"]

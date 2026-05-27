@@ -1,0 +1,45 @@
+<mujoco>
+  <asset>
+    <material name="gripper_mat" rgba="0.2 0.2 0.2 1"/>
+    <material name="finger_mat" rgba="0.1 0.1 0.1 1"/>
+  </asset>
+
+  <default>
+    <default class="gripper">
+      <geom type="box" material="gripper_mat"/>
+      <joint type="slide" range="0 0.05" armature="0.1" damping="10" limited="true"/>
+      <default class="finger">
+        <geom material="finger_mat"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <!-- Gripper Base -->
+    <body name="gripper_base" pos="0 0 0" quat="1 0 0 0">
+      <geom name="gripper_base_geom" size="0.04 0.04 0.04" type="box"/>
+      
+      <!-- Right Finger -->
+      <body name="right_finger" pos="0 0.02 0.06">
+        <joint name="right_driver" axis="0 1 0" class="gripper"/>
+        <geom name="right_finger_geom" size="0.01 0.01 0.05" class="finger"/>
+        <geom name="right_pad" pos="0 -0.01 0.04" size="0.01 0.005 0.01" class="finger"/>
+      </body>
+
+      <!-- Left Finger -->
+      <body name="left_finger" pos="0 -0.02 0.06">
+        <joint name="left_driver" axis="0 -1 0" class="gripper"/>
+        <geom name="left_finger_geom" size="0.01 0.01 0.05" class="finger"/>
+        <geom name="left_pad" pos="0 0.01 0.04" size="0.01 0.005 0.01" class="finger"/>
+      </body>
+      
+      <!-- Pinch Site -->
+      <site name="pinch_site" pos="0 0 0.11" size="0.01" rgba="1 0 0 0.5"/>
+    </body>
+  </worldbody>
+  
+  <actuator>
+    <position name="gripper_open" joint="right_driver" kp="500" kv="20" ctrlrange="0 0.05"/>
+    <position name="gripper_close" joint="left_driver" kp="500" kv="20" ctrlrange="0 0.05"/>
+  </actuator>
+</mujoco>

@@ -1,0 +1,36 @@
+site_name: manipdyn
+site_description: A MuJoCo-physics lab for 6-DOF manipulator planning and control
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: light blue
+  features:
+    - navigation.sections
+    - content.code.copy
+    - toc.integrate
+
+nav:
+  - Home: README.md
+  - Theory:
+      - Control zoo: theory/control.md
+      - Kinematics: theory/kinematics.md
+      - Planning: theory/planning.md
+      - Optimization & optimal control: theory/optimization.md
+      - Benchmark: theory/benchmark.md
+  - Control center (GUI): gui.md
+  - Reinforcement learning: rl.md
+  - Tasks (pick-and-place): tasks.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js
+
+# Build with:  pip install mkdocs-material  &&  mkdocs serve   (from manipdyn/)

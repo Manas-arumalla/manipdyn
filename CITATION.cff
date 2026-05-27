@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "manipdyn: a MuJoCo-physics lab for 6-DOF manipulator planning and control"
+abstract: >-
+  A benchmarked suite of motion planners and controllers for the UR5e in MuJoCo,
+  with trajectory optimization, automatic gain tuning, a reinforcement-learning
+  baseline, a pick-and-place task, and an interactive control center.
+authors:
+  - family-names: Reddy
+    given-names: Manas
+type: software
+license: MIT
+keywords:
+  - robotics
+  - manipulator
+  - mujoco
+  - motion-planning
+  - optimal-control
+  - reinforcement-learning
+  - ur5e

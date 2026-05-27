@@ -1,0 +1,12 @@
+# Normalize line endings for text; auto-detect the rest.
+* text=auto eol=lf
+
+# Treat binary assets as binary (no diffing / EOL conversion).
+*.gif binary
+*.png binary
+*.obj binary
+*.zip binary
+
+# Keep large generated demo assets out of language statistics.
+manipdyn/media/** linguist-generated=true
+manipdyn/benchmarks/results/** linguist-generated=true
