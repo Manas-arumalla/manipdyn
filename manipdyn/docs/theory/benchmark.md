@@ -79,5 +79,13 @@ Each planner's path executed around the pillar, side by side:
 
 ![every planner avoiding the obstacle](../../media/planners.gif)
 
+The end-effector routes make the difference visible — the sampling planners take
+a tight detour past the pillar, while PRM loops wide and high:
+
+![planner end-effector paths](../../benchmarks/results/planner_paths.png)
+
 > Planner numbers are seed-controlled, so `manipdyn bench` reproduces them; plan
 > times are wall-clock and depend on the machine.
+
+More figures — trajectory profiles, the auto-tuning convergence, and a
+per-metric controller scorecard — are in [deeper analysis](../analysis.md).

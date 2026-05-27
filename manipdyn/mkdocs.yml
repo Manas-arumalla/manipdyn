@@ -20,6 +20,7 @@ nav:
       - Planning: theory/planning.md
       - Optimization & optimal control: theory/optimization.md
       - Benchmark: theory/benchmark.md
+  - Deeper analysis: analysis.md
   - Control center (GUI): gui.md
   - Reinforcement learning: rl.md
   - Tasks (pick-and-place): tasks.md
