@@ -2,7 +2,7 @@
   <compiler meshdir="ur5e_model/assets"/>
   <include file="ur5e_model/ur5e_with_gripper.xml"/>
 
-  <statistic center="0.25 0.2 0.35" extent="0.9"/>
+  <statistic center="-0.18 -0.31 0.35" extent="1.0"/>
 
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
@@ -14,27 +14,48 @@
     <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <material name="table_top" rgba="0.62 0.43 0.26 1"/>
+    <material name="table_leg" rgba="0.40 0.27 0.16 1"/>
   </asset>
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 .05" type="plane" material="groundplane"/>
 
-    <!-- Graspable object: a wide, heavy base (stable when placed) with a thin
-         post the gripper grips near the top (~0.35 m, a comfortable height
-         where the arm doesn't contort into the floor). Low centre of mass ->
-         it stays upright on release; no support stand to collide with. -->
-    <body name="object" pos="0.45 0.0 0.0">
-      <freejoint name="object_free"/>
-      <geom name="object_base" type="box" pos="0 0 0.04" size="0.05 0.05 0.04"
-            rgba="0.9 0.35 0.1 1" mass="0.18" friction="2.0 0.05 0.001"/>
-      <geom name="object_geom" type="box" pos="0 0 0.24" size="0.013 0.013 0.16"
-            rgba="0.95 0.6 0.2 1" mass="0.02" friction="2.0 0.05 0.001"/>
+    <!-- Pick table at (-0.49, -0.13): the arm's natural top-down reach (its home
+         pose already points the gripper straight down here), so the grasp is a
+         clean, upright posture rather than a contorted one. Top surface z=0.365. -->
+    <body name="pick_table" pos="-0.49 -0.13 0">
+      <geom name="pick_top" type="box" pos="0 0 0.355" size="0.085 0.085 0.01" material="table_top"/>
+      <geom name="pick_leg_a" type="box" pos="0.07 0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="pick_leg_b" type="box" pos="-0.07 0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="pick_leg_c" type="box" pos="0.07 -0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="pick_leg_d" type="box" pos="-0.07 -0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
     </body>
 
-    <!-- Place target (visual only). -->
-    <site name="place_marker" pos="0.0 0.45 0.02" size="0.05 0.001" rgba="0.1 0.8 0.2 0.5" type="cylinder"/>
-    <site name="target_marker" pos="0.45 0.0 0.4" size="0.02" rgba="1 0 0 0" type="sphere"/>
+    <!-- Place table at (0.13, -0.49): the +90 deg base-pan image of the pick
+         table. A pure shoulder-pan rotation maps the pick column onto the place
+         column exactly, so the carry needs no planning. -->
+    <body name="place_table" pos="0.13 -0.49 0">
+      <geom name="place_top" type="box" pos="0 0 0.355" size="0.085 0.085 0.01" material="table_top"/>
+      <geom name="place_leg_a" type="box" pos="0.07 0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="place_leg_b" type="box" pos="-0.07 0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="place_leg_c" type="box" pos="0.07 -0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="place_leg_d" type="box" pos="-0.07 -0.07 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+    </body>
+
+    <!-- Graspable cube (50 mm), resting on the pick table (center z=0.39, base
+         at 0.365 flush on the table top). Compact, so it is gripped about its
+         centre and cannot topple. -->
+    <body name="object" pos="-0.49 -0.13 0.39">
+      <freejoint name="object_free"/>
+      <geom name="object_geom" type="box" size="0.025 0.025 0.025"
+            rgba="0.93 0.35 0.12 1" mass="0.05" friction="1.5 0.05 0.001"/>
+    </body>
+
+    <!-- Place target marker on the place table (visual only). -->
+    <site name="place_marker" pos="0.13 -0.49 0.366" size="0.04 0.001" rgba="0.1 0.8 0.2 0.6" type="cylinder"/>
+    <site name="target_marker" pos="-0.49 -0.13 0.47" size="0.02" rgba="1 0 0 0" type="sphere"/>
   </worldbody>
 
   <equality>

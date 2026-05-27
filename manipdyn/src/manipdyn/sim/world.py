@@ -1,9 +1,9 @@
 """World: a thin wrapper around a MuJoCo UR5e model.
 
-Design goals (lessons from the v1 prototype):
+Design notes:
   * Load scenes by absolute path so it runs from any working directory.
   * Discover the arm's joints / DOFs / actuators *from the model* by name,
-    instead of hardcoding ``6`` everywhere and slicing ``[:6]`` on faith.
+    rather than hardcoding ``6`` and slicing ``[:6]``.
   * Expose the handful of physics quantities controllers actually need
     (end-effector pose, Jacobian, mass matrix, bias/gravity force) behind a
     small, typed surface so controllers never touch ``mujoco`` directly.

@@ -6,8 +6,8 @@ abstract: >-
   with trajectory optimization, automatic gain tuning, a reinforcement-learning
   baseline, a pick-and-place task, and an interactive control center.
 authors:
-  - family-names: Reddy
-    given-names: Manas
+  - family-names: Arumalla
+    given-names: Manas Reddy
 type: software
 license: MIT
 keywords:

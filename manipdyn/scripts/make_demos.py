@@ -60,26 +60,26 @@ def demo_reach() -> Path:
 
 
 def demo_obstacle() -> Path:
-    world = World(scene="scene")  # has the blue obstacle box
-    q_start = np.array([0.0, -1.5708, 1.5708, -1.5708, -1.5708, 0.0])
-    q_goal = np.array([-1.5, -1.5708, 1.0, -1.5708, -1.5708, 0.0])
+    # A pillar stands directly in the straight-line swing between start and goal,
+    # so the planner has to lift the end-effector up and over it.
+    world = World(scene="scene_obstacle")
+    q_start = np.array([0.0, -1.2, 1.4, -1.7, -1.57, 0.0])
+    q_goal = np.array([-1.4, -1.2, 1.4, -1.7, -1.57, 0.0])
 
-    planner = RRTConnect(world, seed=1, max_iter=5000)
+    planner = RRTConnect(world, seed=3, max_iter=8000)
     path = planner.plan(q_start, q_goal)
     if path is None:
         raise RuntimeError("planner failed for the obstacle demo")
-    path = shortcut_path(path, planner.checker, iterations=150, seed=1)
+    path = shortcut_path(path, planner.checker, iterations=150, seed=3)
 
-    timed = parameterize_time_optimal(path, np.full(6, 1.5), np.full(6, 3.0), n_samples=200)
+    timed = parameterize_time_optimal(path, np.full(6, 1.2), np.full(6, 2.5), n_samples=200)
 
-    world.reset(q_start)
-    world.set_target_marker(_fk(world, q_goal))
     world.reset(q_start)
     controller = tuned_controller("ctc", world)
     controller.reset()
 
     end = timed.duration + 1.0
-    cam = dict(lookat=(0.1, -0.05, 0.3), distance=2.3, azimuth=250, elevation=-45)
+    cam = dict(lookat=(-0.35, 0.25, 0.35), distance=2.0, azimuth=55, elevation=-25)
     with Recorder(world, width=480, height=380, fps=25, **cam) as rec:
         i = 0
         while world.time <= end:

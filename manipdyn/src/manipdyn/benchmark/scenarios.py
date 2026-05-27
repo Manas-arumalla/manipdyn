@@ -43,9 +43,11 @@ class PlannerQuery:
 
 
 def planner_query() -> PlannerQuery:
-    """A start/goal pair around the obstacle box in ``scene``."""
+    """A start/goal pair whose straight-line joint motion is *blocked* by the
+    pillar in ``scene_obstacle`` (the direct interpolation collides through the
+    middle of the motion), so planners must actually find a detour."""
     return PlannerQuery(
-        scene="scene",
-        q_start=np.array([0.0, -1.5708, 1.5708, -1.5708, -1.5708, 0.0]),
-        q_goal=np.array([-1.5, -1.5708, 1.0, -1.5708, -1.5708, 0.0]),
+        scene="scene_obstacle",
+        q_start=np.array([0.0, -1.2, 1.4, -1.7, -1.57, 0.0]),
+        q_goal=np.array([-1.4, -1.2, 1.4, -1.7, -1.57, 0.0]),
     )

@@ -1,43 +1,53 @@
 # Tasks: pick-and-place
 
 The pick-and-place demo (`scripts/make_pick_place.py`) chains the library's
-components into a complete manipulation task and renders it headlessly.
+components into a complete manipulation task and renders it headlessly: a cube
+is picked off one table, carried, and placed on a second table.
 
 ![pick and place](../media/pick_place.gif)
 
 ## Pipeline
 
-1. **Grasp configuration** — a robust multi-seed optimization finds joint angles
-   that place the gripper at the grasp point with its approach axis pointing
-   **down**, *within joint limits* and validated by forward kinematics.
-   (Unconstrained solves return out-of-limit elbow/wrist angles the actuators
-   can't hold; plain orientation IK is unreliable on this gripper.)
-2. **Approach configuration** — the grasp config lifted straight up with small,
-   limit-clamped **Jacobian steps**, so it stays in the same IK branch (a clean
-   vertical, orientation-preserving move rather than a wild reconfiguration).
-3. **Place configurations** — the pick configs with the base joint rotated 90°.
-   Because the shoulder pan rotates the whole arm about the vertical axis, this
-   maps the pickup column `(0.45, 0)` to the place column `(0, 0.45)` *exactly*,
-   so the carry is a clean base rotation needing no planning.
+1. **Grasp configuration** — a multi-seed optimization finds joint angles that
+   place the gripper at the cube with its approach axis pointing **down**,
+   *within joint limits* and validated by forward kinematics. The cube sits in
+   the arm's natural top-down reach, so this is a clean upright posture rather
+   than a contorted one. (Plain orientation IK is unreliable on this gripper.)
+2. **Approach** — a true vertical line. A top-down configuration is solved at
+   each height (seeded from the one below it, so it stays in the same IK
+   branch), so the open fingers slide **straight down** around the cube without
+   raking it. A plain joint-space interpolation between two top-down configs
+   does *not* keep the gripper pointing down in between, so the fingers would
+   swing sideways and knock the cube over.
+3. **Place configurations** — the pick configurations with the base joint
+   rotated 90°. Because the shoulder pan rotates the whole arm about the
+   vertical axis, this maps the pick table at `(-0.49, -0.13)` onto the place
+   table at `(0.13, -0.49)` *exactly*, so the carry is a clean base rotation
+   needing no planning.
 4. **Execution** — every move is a time-optimal trajectory tracked by
    computed-torque control.
-5. **Grasp** — while held, the object's pose tracks the gripper rigidly from the
-   captured grasp transform (velocity zeroed, so release is gentle). This is
-   more robust than a MuJoCo weld equality, which preserves its *compile-time*
-   relative pose and would fling the object on activation.
+5. **Grasp** — the fingers close on the cube, then a weld constraint holds it
+   rigidly while it is carried. The weld's relative pose is set *at grasp time*
+   from the live gripper-to-cube transform; a default weld keeps its
+   *compile-time* relative pose and would fling the cube on activation. A rigid
+   weld is more robust here than a slip-prone friction hold.
 
 ## The object
 
-A wide, heavy base with a thin grippable post: the gripper grips the post high
-(≈ 0.35 m — a comfortable height where the arm doesn't contort into the floor),
-while the low centre of mass keeps the object upright when it's set down.
+A 50 mm cube on a small table. Being compact, it is gripped about its centre
+and cannot topple, and a second identical table at the base-rotated location
+receives it — a clear, honest pick-and-place rather than a fragile balancing
+act.
 
-## Lessons (documented so they aren't re-learned)
+## Design notes
 
-* Top-down grasps below ≈ 0.35 m make IK contort an arm link **through the
-  floor** — keep grasps high.
-* A free object must rest **exactly** on the floor (center = half-height) or the
-  initial settling drop topples a tall object.
-* Support stands under the object get hit by the arm on approach; a free-
-  standing object (excluded from the approach's collision set, or simply low
-  enough not to obstruct) avoids this.
+* This arm's natural **top-down workspace is on one side** of the base — at its
+  home pose the gripper already points straight down at ≈ `(-0.49, -0.13, 0.39)`.
+  Top-down targets outside that zone have no natural IK solution; the optimizer
+  is forced into contorted, limit-straining postures that drive a link through
+  the table. So the tables sit in the natural zone.
+* The arm is held under **closed-loop control from the very first step**. An
+  uncontrolled settle would let it droop under gravity and nudge the cube before
+  the motion even begins.
+* The descent and retreat are **orientation-locked** vertical lines (see step 2),
+  which is what keeps the gripper from sweeping into the cube or the table.

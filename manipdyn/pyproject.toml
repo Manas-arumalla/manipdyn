@@ -9,7 +9,7 @@ description = "A MuJoCo-physics lab for 6-DOF manipulator planning and control: 
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Manas Reddy" }]
+authors = [{ name = "Manas Reddy Arumalla" }]
 keywords = ["robotics", "manipulator", "mujoco", "control", "motion-planning", "ur5e"]
 classifiers = [
     "Programming Language :: Python :: 3",

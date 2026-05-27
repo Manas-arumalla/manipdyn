@@ -22,13 +22,13 @@
 
 ---
 
-## Why this project
+## Why I built this
 
-Most manipulator demos show *one* method doing *one* thing. **manipdyn implements
-the classical and modern methods behind a single uniform interface, then
-*measures* them against each other** on identical, reproducible, fairly-tuned
-scenarios — answering *which method wins, and when*, with data instead of
-adjectives.
+I wanted one place to implement the classical and modern manipulator methods
+behind a single interface and compare them fairly — on identical, reproducible,
+auto-tuned scenarios — instead of judging them one demo at a time. So I built a
+benchmark that puts every controller and planner on the same bench and reports
+the numbers.
 
 ## Highlights
 
@@ -75,14 +75,14 @@ Regenerate any time with `manipdyn bench`.
 
 | controller | final err | settle | effort ‖τ‖² | compute |
 |------------|----------:|-------:|------------:|--------:|
-| computed-torque | **8e-10 mm** | 0.23 s | 6.0e3 | 0.013 ms |
-| lqr | 2e-5 mm | 0.34 s | 2.2e3 | 0.010 ms |
-| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.05 ms |
-| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.57 ms |
+| computed-torque | **8e-13 mm** | 0.23 s | 6.0e3 | 0.014 ms |
+| lqr | 2e-8 mm | 0.34 s | 2.2e3 | 0.010 ms |
+| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.048 ms |
+| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.31 ms |
 | ilqr | 0.01 mm | 0.29 s | 2.2e3 | 0.12 ms |
 | pid | 0.23 mm | 0.26 s | 6.9e3 | **0.008 ms** |
-| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.010 ms |
-| mppi | 8.95 mm | 1.21 s | **1.8e3** | 22.5 ms |
+| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.013 ms |
+| mppi | 3.87 mm | 1.58 s | **1.8e3** | 27.5 ms |
 
 <img src="manipdyn/benchmarks/results/controllers.png" width="80%" alt="controller benchmark"/>
 

@@ -16,17 +16,15 @@
   <img src="media/obstacle_avoidance.gif" width="38%" alt="RRT-Connect obstacle avoidance"/>
 </p>
 
-> **Top:** a full pick-and-place — top-down grasp, base-rotation transport, and a stable place — built from IK, the planner, time-optimal trajectories, and computed-torque control. **Bottom:** operational-space control reaching a target (left); an RRT-Connect plan, time-parameterized and tracked with computed-torque control around an obstacle (right). All rendered headlessly by the library.
+> **Top:** a full pick-and-place — cube picked off one table, carried by a base rotation, and placed on another — built from a top-down grasp solver, time-optimal trajectories, and computed-torque control. **Bottom:** operational-space control reaching a target (left); an RRT-Connect plan, time-parameterized and tracked with computed-torque control around an obstacle (right). All rendered headlessly by the library.
 
 ---
 
-## Why this exists
+## Why I built this
 
-Most manipulator demos show *one* controller doing *one* thing. `manipdyn`
-implements the classical and modern methods behind a **single uniform
-interface**, then **measures** them against each other on identical,
-reproducible scenarios — so the project answers *which method wins, and when*,
-with data instead of adjectives.
+I wanted one place to implement the classical and modern manipulator methods
+behind a single interface and compare them fairly, on identical and
+reproducible scenarios, instead of judging each one from a separate demo.
 
 ## Features
 
@@ -74,21 +72,22 @@ Regenerate with `manipdyn bench`.
 
 | controller | final err | settle | effort ‖τ‖² | compute |
 |------------|----------:|-------:|------------:|--------:|
-| computed-torque | **8e-10 mm** | 0.23 s | 6.0e3 | 0.013 ms |
-| lqr | 2e-5 mm | 0.34 s | 2.2e3 | 0.010 ms |
-| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.05 ms |
-| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.57 ms |
+| computed-torque | **8e-13 mm** | 0.23 s | 6.0e3 | 0.014 ms |
+| lqr | 2e-8 mm | 0.34 s | 2.2e3 | 0.010 ms |
+| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.048 ms |
+| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.31 ms |
 | ilqr | 0.01 mm | 0.29 s | 2.2e3 | 0.12 ms |
 | pid | 0.23 mm | 0.26 s | 6.9e3 | **0.008 ms** |
-| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.010 ms |
-| mppi | 8.95 mm | 1.21 s | **1.8e3** | 22.5 ms |
+| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.013 ms |
+| mppi | 3.87 mm | 1.58 s | **1.8e3** | 27.5 ms |
 
 ![controller benchmark](benchmarks/results/controllers.png)
 
 Auto-tuning (global search + Nelder-Mead polish) cut controller cost by
-**41–65%** vs. hand-picked defaults; planners range from RRT-Connect (~1 ms) to
-the asymptotically-optimal Informed RRT\*. See [docs](docs/) for the full tables
-and the math behind each method.
+**41–65%** vs. hand-picked defaults. On a genuinely blocked obstacle query, all
+five planners find a detour — from fast feasible RRT / RRT-Connect (~20 ms) to
+the asymptotically-optimal Informed RRT\* (shortest path). See [docs](docs/) for
+the full tables and the math behind each method.
 
 **Learned baseline:** an SAC policy on the same physics reaches **80%** of
 random goals to within 3 cm (mean final error **34 mm**) after 40k steps —

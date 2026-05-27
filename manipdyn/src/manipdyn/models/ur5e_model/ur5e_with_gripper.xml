@@ -168,8 +168,8 @@
     <motor name="wrist_3" joint="wrist_3_joint" ctrllimited="true" ctrlrange="-28 28"/>
     
     <!-- Gripper Actuators -->
-    <position name="gripper_open" joint="right_driver" kp="200" kv="10" ctrlrange="0 0.04"/>
-    <position name="gripper_close" joint="left_driver" kp="200" kv="10" ctrlrange="0 0.04"/>
+    <position name="gripper_open" joint="right_driver" kp="800" kv="40" ctrlrange="0 0.04"/>
+    <position name="gripper_close" joint="left_driver" kp="800" kv="40" ctrlrange="0 0.04"/>
   </actuator>
 
   <keyframe>

@@ -25,6 +25,7 @@ site/
 .vscode/
 .idea/
 *.sublime-*
+.claude/
 
 # OS
 .DS_Store

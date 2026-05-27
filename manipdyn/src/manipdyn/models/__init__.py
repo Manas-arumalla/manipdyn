@@ -1,8 +1,8 @@
 """Bundled MuJoCo models and a resolver that works regardless of CWD.
 
 Scenes are loaded by *absolute* path so MuJoCo resolves ``<include>`` and
-``meshdir`` relative to the scene file — fixing the CWD-brittleness of the
-original prototype, where everything had to run from one directory.
+``meshdir`` relative to the scene file, which lets the package run from any
+working directory.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from pathlib import Path
 _MODELS_DIR = Path(__file__).resolve().parent
 
 # Scenes shipped with the package (without the .xml suffix).
-AVAILABLE_SCENES = ("scene", "scene_base", "scene_base_gripper")
+AVAILABLE_SCENES = ("scene", "scene_base", "scene_base_gripper", "scene_obstacle", "scene_pick")
 
 
 def models_dir() -> Path:

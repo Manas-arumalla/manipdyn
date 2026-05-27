@@ -31,8 +31,7 @@ manipdyn gui
 
 ## Architecture
 
-Unlike the v1 prototype (which wrote a JSON config and `subprocess`-launched a
-separate script from a fixed directory), this GUI **imports the `manipdyn`
-library directly**. It builds a `World`, a `Controller`, and (optionally) a
-planned trajectory in-process, so it is robust to the working directory, easy
-to extend, and shares exactly the same code paths the benchmark uses.
+The GUI imports the `manipdyn` library directly and builds a `World`, a
+`Controller`, and (optionally) a planned trajectory in-process. It shares the
+same code paths as the benchmark, so it stays in step with the rest of the
+package and is independent of the working directory.

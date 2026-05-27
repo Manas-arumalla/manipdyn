@@ -13,13 +13,17 @@ from manipdyn.planning import PLANNERS, shortcut_path
 from manipdyn.sim import World
 from manipdyn.tuning import tuned_controller
 
-# Per-planner budgets for the benchmark (kept modest so a full run is quick).
+# Per-planner budgets for the benchmark on the (genuinely blocked) obstacle
+# query. The detour past the pillar is a tight passage in configuration space:
+# bidirectional RRT-Connect and the PRM roadmap solve it every time, while
+# single-tree RRT / RRT* reach it less reliably within budget — a textbook
+# narrow-passage result, not a misconfiguration.
 _PLANNER_KW = {
-    "rrt": {"max_iter": 5000},
+    "rrt": {"max_iter": 6000, "goal_bias": 0.2},
     "rrt_connect": {"max_iter": 5000},
-    "rrt_star": {"max_iter": 1500},
-    "informed_rrt_star": {"max_iter": 1500},
-    "prm": {"n_samples": 200, "k_neighbors": 12},
+    "rrt_star": {"max_iter": 3000, "goal_bias": 0.2},
+    "informed_rrt_star": {"max_iter": 3000, "goal_bias": 0.2},
+    "prm": {"n_samples": 500, "k_neighbors": 15},
 }
 
 
@@ -87,7 +91,7 @@ def benchmark_planners(
             if path is None:
                 runs.append(PlannerRun(name, False, dt, float("inf"), 0, False))
                 continue
-            short = shortcut_path(path, planner.checker, iterations=100, seed=seed + trial)
+            short = shortcut_path(path, planner.checker, iterations=250, seed=seed + trial)
             collision_free = all(not planner.checker.in_collision(q) for q in path)
             runs.append(PlannerRun(name, True, dt, _path_length(short), len(path), collision_free))
         ok = [r for r in runs if r.success]
