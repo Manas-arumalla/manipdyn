@@ -94,16 +94,12 @@ live in [`manipdyn/docs/`](manipdyn/docs/).
 ## Repository layout
 
 ```
-manipdyn/            ← the project (v2): installable package, benchmark, GUI, docs, demos
-code/                ← v1 origin story: a clean pure-NumPy trajectory simulator
-Manipulator Test/    ← the first MuJoCo experiment that seeded the rewrite
+manipdyn/            the package — planning, control, benchmark, GUI, docs, demos
+code/                an earlier pure-NumPy trajectory simulator
+Manipulator Test/    an earlier MuJoCo prototype
 ```
 
-> **`manipdyn/` is the project.** `code/` and `Manipulator Test/` are preserved
-> unchanged as the "origin story" — a pure-NumPy 6-DOF simulator and a first
-> MuJoCo prototype that this rewrite turns into a clean, tested, benchmarked,
-> documented package. See **[`manipdyn/README.md`](manipdyn/README.md)** for the
-> full package documentation.
+Full package documentation: [`manipdyn/README.md`](manipdyn/README.md).
 
 ## Attribution & license
 

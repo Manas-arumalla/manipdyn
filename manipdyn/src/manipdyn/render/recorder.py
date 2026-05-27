@@ -26,6 +26,10 @@ class Recorder:
         height: int = 480,
         camera: str | None = None,
         fps: int = 30,
+        lookat: tuple[float, float, float] | None = None,
+        distance: float | None = None,
+        azimuth: float | None = None,
+        elevation: float | None = None,
     ):
         self.world = world
         self.fps = fps
@@ -33,9 +37,22 @@ class Recorder:
         self._camera = camera
         self.frames: list[np.ndarray] = []
 
+        # Optional explicit free-camera framing (for clear, repeatable shots).
+        self._free_cam = None
+        if any(v is not None for v in (lookat, distance, azimuth, elevation)):
+            cam = mujoco.MjvCamera()
+            cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+            cam.lookat[:] = lookat if lookat is not None else (0.0, 0.0, 0.3)
+            cam.distance = distance if distance is not None else 2.0
+            cam.azimuth = azimuth if azimuth is not None else 90.0
+            cam.elevation = elevation if elevation is not None else -25.0
+            self._free_cam = cam
+
     def capture(self) -> None:
         """Render the current world state and append it to the frame buffer."""
-        if self._camera is not None:
+        if self._free_cam is not None:
+            self._renderer.update_scene(self.world.data, camera=self._free_cam)
+        elif self._camera is not None:
             self._renderer.update_scene(self.world.data, camera=self._camera)
         else:
             self._renderer.update_scene(self.world.data)

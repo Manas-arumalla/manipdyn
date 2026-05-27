@@ -117,7 +117,18 @@ def main() -> None:
     place, place_hi = grasp + rotate, pick_hi + rotate
 
     ctrl = ComputedTorqueController(world, kp=600, kd=50)
-    rec = Recorder(world, width=480, height=360, fps=20)
+    # Framed camera: pickup column (+x) on the left, place target (+y) on the
+    # right, so the carry reads clearly as an A -> B transport.
+    rec = Recorder(
+        world,
+        width=520,
+        height=420,
+        fps=20,
+        lookat=(0.2, 0.2, 0.1),
+        distance=1.6,
+        azimuth=225,
+        elevation=-40,
+    )
     dt = world.timestep
     grasp_point = np.array([obj[0], obj[1], GRASP_Z])
     state = {

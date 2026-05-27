@@ -118,12 +118,10 @@ Library-backed (no subprocess/JSON), with an embedded live MuJoCo view,
 per-controller gain fields, planner integration, and a real-time error plot.
 See [docs/gui.md](docs/gui.md).
 
-## Relationship to v1
+## Earlier prototypes
 
-This is the v2 rewrite. The original prototypes are preserved unchanged as the
-"origin story": a pure-NumPy trajectory simulator (`../code/`) and a first
-MuJoCo experiment (`../Manipulator Test/`). `manipdyn` turns that exploration
-into a clean, tested, benchmarked, and documented package.
+[`../code/`](../code/) holds an earlier pure-NumPy trajectory simulator and
+[`../Manipulator Test/`](../Manipulator%20Test/) an earlier MuJoCo prototype.
 
 ## Attribution & license
 

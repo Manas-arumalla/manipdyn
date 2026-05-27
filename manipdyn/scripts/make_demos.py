@@ -50,12 +50,13 @@ def demo_reach() -> Path:
     controller.reset()
     target = Target(x=x_goal)
 
-    with Recorder(world, width=480, height=360, fps=25) as rec:
+    cam = dict(lookat=(0.15, -0.1, 0.4), distance=1.7, azimuth=140, elevation=-22)
+    with Recorder(world, width=480, height=380, fps=25, **cam) as rec:
         for i in range(int(3.5 / world.timestep)):
             world.step(controller.compute(target))
             if i % 8 == 0:
                 rec.capture()
-        return rec.save_gif(MEDIA / "reach_osc.gif", palettesize=48, max_width=360)
+        return rec.save_gif(MEDIA / "reach_osc.gif", palettesize=48, max_width=380)
 
 
 def demo_obstacle() -> Path:
@@ -78,7 +79,8 @@ def demo_obstacle() -> Path:
     controller.reset()
 
     end = timed.duration + 1.0
-    with Recorder(world, width=480, height=360, fps=25) as rec:
+    cam = dict(lookat=(0.1, -0.05, 0.3), distance=2.3, azimuth=250, elevation=-45)
+    with Recorder(world, width=480, height=380, fps=25, **cam) as rec:
         i = 0
         while world.time <= end:
             q_ref, qd_ref = _interp(timed, min(world.time, timed.duration))
@@ -86,7 +88,7 @@ def demo_obstacle() -> Path:
             if i % 8 == 0:
                 rec.capture()
             i += 1
-        return rec.save_gif(MEDIA / "obstacle_avoidance.gif", palettesize=48, max_width=360)
+        return rec.save_gif(MEDIA / "obstacle_avoidance.gif", palettesize=48, max_width=380)
 
 
 def main() -> None:
