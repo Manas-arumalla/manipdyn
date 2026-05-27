@@ -95,6 +95,27 @@ Every method is also shown *running*, not just charted — all 8 controllers
 reaching and all 5 planners avoiding, side by side
 ([`manipdyn/docs/theory/benchmark.md`](manipdyn/docs/theory/benchmark.md)).
 
+## Analysis
+
+Beyond the headline tables, each method is studied in depth — full write-up in
+[`manipdyn/docs/analysis.md`](manipdyn/docs/analysis.md).
+
+**Controller scorecard** — eight controllers across five criteria, green = best in each column. No method wins everything:
+
+<img src="manipdyn/benchmarks/results/controller_heatmap.png" width="78%" alt="controller scorecard heatmap"/>
+
+**Planner routes in the workspace** — the same blocked query solved by all five planners. RRT / RRT-Connect / RRT\* / Informed take a tight detour past the pillar; PRM's uniform roadmap loops wide and high:
+
+<img src="manipdyn/benchmarks/results/planner_paths.png" width="92%" alt="planner end-effector paths, top and side views"/>
+
+**Time-optimal trajectories (TOPP)** — joint velocities and accelerations ride their limits (dashed), the bang-bang structure that makes the timing optimal:
+
+<img src="manipdyn/benchmarks/results/traj_profiles.png" width="78%" alt="time-optimal velocity and acceleration profiles"/>
+
+**Auto-tuning convergence** — best-so-far cost under a global search, then a bounded Nelder-Mead polish (dashed line):
+
+<img src="manipdyn/benchmarks/results/tuning_convergence.png" width="68%" alt="auto-tuning convergence curves"/>
+
 ## Control center
 
 A PySide6 desktop app drives the lab interactively: pick a controller and
