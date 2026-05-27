@@ -47,6 +47,10 @@ What the numbers say:
   the *least peak torque* — the gradient-free sampler trades accuracy and
   compute for generality.
 
+All eight reaching the **same** target, side by side (`python scripts/make_gallery.py`):
+
+![every controller reaching](../../media/controllers.gif)
+
 ## Planner results (obstacle scene)
 
 The query is **genuinely blocked**: a straight-line joint move from start to
@@ -66,6 +70,10 @@ All five solve it. **RRT and RRT-Connect** return a feasible path in ~20 ms.
 Informed returns the **shortest** path (1.42 rad). **PRM** answers the query
 quickly from its precomputed roadmap, but the roadmap is not tailored to this
 detour, so its path is longer until more samples are added.
+
+Each planner's path executed around the pillar, side by side:
+
+![every planner avoiding the obstacle](../../media/planners.gif)
 
 > Planner numbers are seed-controlled, so `manipdyn bench` reproduces them; plan
 > times are wall-clock and depend on the machine.

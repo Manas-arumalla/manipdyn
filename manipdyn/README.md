@@ -89,6 +89,13 @@ five planners find a detour — from fast feasible RRT / RRT-Connect (~20 ms) to
 the asymptotically-optimal Informed RRT\* (shortest path). See [docs](docs/) for
 the full tables and the math behind each method.
 
+**Every method, simulated — not just charted** (`python scripts/make_gallery.py`):
+all 8 controllers reaching the same target, and all 5 planners' paths executed
+around the obstacle pillar.
+
+![all controllers reaching](media/controllers.gif)
+![all planners avoiding the obstacle](media/planners.gif)
+
 **Learned baseline:** an SAC policy on the same physics reaches **80%** of
 random goals to within 3 cm (mean final error **34 mm**) after 40k steps —
 learned and model-based control on one bench. See [docs/rl.md](docs/rl.md).
