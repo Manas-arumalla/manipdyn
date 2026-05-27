@@ -52,6 +52,11 @@ def benchmark_controllers(
                     world, controller, target, duration=duration, settle_tol_mm=settle_tol_mm
                 )
             )
+        # a representative end-effector-error-vs-time curve (mean over the
+        # targets) so the report can draw convergence plots, not just bars
+        curve_t = runs[0].t.tolist()
+        stacked = np.vstack([np.nan_to_num(r.err_mm, nan=1e4, posinf=1e4) for r in runs])
+        curve_err = stacked.mean(axis=0).tolist()
         rows.append(
             {
                 "controller": name,
@@ -62,6 +67,8 @@ def benchmark_controllers(
                 "effort": _mean([r.effort for r in runs]),
                 "peak_torque_nm": _mean([r.peak_torque_nm for r in runs]),
                 "compute_ms": _mean([r.compute_ms for r in runs]),
+                "curve_t": curve_t,
+                "curve_err_mm": curve_err,
             }
         )
     return rows

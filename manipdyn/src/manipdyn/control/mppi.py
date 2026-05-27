@@ -41,7 +41,7 @@ class MPPIController(Controller):
         w_pos: float = 5000.0,
         w_vel: float = 20.0,
         w_ctrl: float = 1e-3,
-        seed: int | None = None,
+        seed: int = 0,
     ):
         super().__init__(world)
         self.horizon = horizon

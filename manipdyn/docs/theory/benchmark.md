@@ -30,8 +30,8 @@ Cartesian set-point.
 | ilqr       | 0.01   | 0.29 | 2.2e3 | 220  | 0.12  |
 | impedance  | 2.93   | 0.55 | 4.2e3 | 486  | 0.013 |
 | osc        | 0.008  | 0.18 | 6.9e3 | 797  | 0.048 |
-| tsid       | 0.025  | 0.20 | 2.3e3 | 233  | 1.31  |
-| mppi       | 3.87   | 1.58 | 1.8e3 | 74   | 27.5  |
+| tsid       | 0.025  | 0.20 | 2.3e3 | 233  | 1.02  |
+| mppi       | 13.2   | 2.12 | 1.8e3 | 76   | 18.2  |
 
 What the numbers say:
 
@@ -43,9 +43,10 @@ What the numbers say:
 * **PID** is the cheapest to compute (~8 µs) and perfectly serviceable.
 * **Impedance** leaves a few-mm steady-state error — expected for a
   Jacobian-transpose spring without inertia shaping.
-* **MPPI** is the most expensive (~28 ms/step) and least precise here, but uses
-  the *least peak torque* — the gradient-free sampler trades accuracy and
-  compute for generality.
+* **MPPI** is the most expensive (~18 ms/step) and least precise here — it even
+  misses the 2 cm tolerance on the hardest goal — but uses the *least peak
+  torque*: the gradient-free sampler trades accuracy and compute for generality
+  and needs no model derivatives.
 
 All eight reaching the **same** target, side by side (`python scripts/make_gallery.py`):
 
@@ -67,9 +68,12 @@ has to find a detour up and over it.
 
 All five solve it. **RRT and RRT-Connect** return a feasible path in ~20 ms.
 **RRT\*** and **Informed RRT\*** spend seconds rewiring to shrink cost, and
-Informed returns the **shortest** path (1.42 rad). **PRM** answers the query
-quickly from its precomputed roadmap, but the roadmap is not tailored to this
-detour, so its path is longer until more samples are added.
+Informed returns the **shortest** path (1.42 rad). **PRM** answers from a
+precomputed roadmap, but its uniform samples route a longer, higher-arcing
+detour that shortcutting can't straighten across the pillar — and denser
+sampling barely helps, since the corridor over the pillar is a narrow passage.
+PRM's payoff is reusing one roadmap across *many* queries, not single-query path
+quality.
 
 Each planner's path executed around the pillar, side by side:
 
