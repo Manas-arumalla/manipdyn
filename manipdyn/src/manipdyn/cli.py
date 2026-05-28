@@ -39,10 +39,18 @@ def _cmd_demo(args: argparse.Namespace) -> None:
 
 
 def _cmd_gui(args: argparse.Namespace) -> None:
+    import sys
+
     try:
         from manipdyn.gui import launch
     except ImportError as exc:
-        raise SystemExit("GUI requires the 'gui' extra: pip install -e '.[gui]'") from exc
+        raise SystemExit(
+            f"Could not load the GUI: {exc}\n"
+            "  • If PySide6 is missing, install the extra:  pip install -e '.[gui]'\n"
+            "  • If you have several Python versions, the 'manipdyn' command may be\n"
+            f"    running under the wrong one. This interpreter is {sys.executable};\n"
+            "    launch explicitly with:  python -m manipdyn.cli gui"
+        ) from exc
     launch()
 
 
