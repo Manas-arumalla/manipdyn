@@ -264,9 +264,10 @@ class ObstacleEngine:
     metric = "EE error to goal (mm)"
     steps_per_tick = 16
 
-    def __init__(self, planner_name, obstacle_xy=None):
+    def __init__(self, planner_name, obstacle_xy=None, goal_xyz=None):
         self.planner_name = planner_name
         self.obstacle_xy = obstacle_xy
+        self.goal_xyz = goal_xyz
 
     def prepare(self):
         self.world = World(scene="scene_obstacle")
@@ -274,19 +275,28 @@ class ObstacleEngine:
             gid = mujoco.mj_name2id(self.world.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
             self.world.model.geom_pos[gid][:2] = self.obstacle_xy
         self.world.reset(_OBS_START)
+        if self.goal_xyz is not None:
+            self.world.set_target_marker(self.goal_xyz)
+            q_goal = (
+                IKSolver(self.world).solve(np.asarray(self.goal_xyz, float), q_guess=_OBS_GOAL).q
+            )
+        else:
+            q_goal = _OBS_GOAL
         planner = PLANNERS[self.planner_name](
             self.world, seed=0, **_PLANNER_KW.get(self.planner_name, {})
         )
-        path = planner.plan(_OBS_START, _OBS_GOAL)
+        if planner.checker.in_collision(q_goal):
+            raise RuntimeError("goal is unreachable / inside the pillar — move it")
+        path = planner.plan(_OBS_START, q_goal)
         if path is None:
-            raise RuntimeError(f"{self.planner_name} found no path for this query")
+            raise RuntimeError(f"{self.planner_name} found no path (try moving the goal/pillar)")
         path = shortcut_path(path, planner.checker, iterations=150, seed=0)
         self.timed = parameterize_time_optimal(
             path, np.full(6, 1.2), np.full(6, 2.5), n_samples=200
         )
         self.ctrl = ComputedTorqueController(self.world, kp=600, kd=50)
         self.ctrl.reset()
-        self.world.set_arm_qpos(_OBS_GOAL)
+        self.world.set_arm_qpos(q_goal)
         self.world.forward()
         self.goal_x = self.world.ee_pos.copy()
         self.world.reset(_OBS_START)
@@ -661,13 +671,18 @@ class ManipdynGUI(QMainWindow):
         self.cb_obs_planner.setCurrentText("rrt_connect")
         form.addRow("Planner", self.cb_obs_planner)
         box.addLayout(form)
-        drag = QLabel("Drag to place the pillar — it moves in-scene; the planner routes around it:")
+        drag = QLabel(
+            "Drag to place the pillar and the goal — both move in-scene; the planner "
+            "routes around the pillar to the goal:"
+        )
         drag.setObjectName("sub")
         drag.setWordWrap(True)
         box.addWidget(drag)
-        self.sl_ox = AxisSlider("pillar X", -0.78, -0.36, -0.57)
-        self.sl_oy = AxisSlider("pillar Y", 0.10, 0.50, 0.30)
-        for s in (self.sl_ox, self.sl_oy):
+        self.sl_ox = AxisSlider("pillar X", -0.85, -0.25, -0.57)
+        self.sl_oy = AxisSlider("pillar Y", -0.05, 0.60, 0.30)
+        self.sl_gx = AxisSlider("goal X", -0.58, 0.12, -0.24)
+        self.sl_gy = AxisSlider("goal Y", 0.20, 0.68, 0.60)
+        for s in (self.sl_ox, self.sl_oy, self.sl_gx, self.sl_gy):
             s.changed.connect(self._on_obstacle_changed)
             box.addWidget(s)
         return card
@@ -775,7 +790,9 @@ class ManipdynGUI(QMainWindow):
             return ReachEngine("scene_base", self.cb_ctrl.currentText(), self._read_gains(), tgt)
         if mode == "Obstacle Avoidance":
             return ObstacleEngine(
-                self.cb_obs_planner.currentText(), [self.sl_ox.value(), self.sl_oy.value()]
+                self.cb_obs_planner.currentText(),
+                [self.sl_ox.value(), self.sl_oy.value()],
+                [self.sl_gx.value(), self.sl_gy.value(), 0.374],
             )
         if mode == "Pick & Place":
             return PickPlaceEngine()
@@ -915,11 +932,14 @@ class ManipdynGUI(QMainWindow):
                 w = World(scene="scene_base")
                 w.reset(w.home_qpos_arm)
                 w.set_target_marker([self.sl_x.value(), self.sl_y.value(), self.sl_z.value()])
+                w.forward()  # refresh data.site_xpos so the marker renders where placed
             elif mode == "Obstacle Avoidance":
                 w = World(scene="scene_obstacle")
                 gid = mujoco.mj_name2id(w.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
                 w.model.geom_pos[gid][:2] = [self.sl_ox.value(), self.sl_oy.value()]
                 w.reset(_OBS_START)
+                w.set_target_marker([self.sl_gx.value(), self.sl_gy.value(), 0.374])
+                w.forward()
             else:
                 self.view.setPixmap(QPixmap())
                 self.view.setText("Configure, then Watch Sim or Run Sim")
@@ -952,12 +972,14 @@ class ManipdynGUI(QMainWindow):
             self.engine.retarget(xyz)  # live re-targeting during Watch
         elif self.preview_world is not None:
             self.preview_world.set_target_marker(xyz)
+            self.preview_world.forward()  # recompute site_xpos so the marker moves
             self._render_preview()
 
     def _on_obstacle_changed(self) -> None:
         if self.preview_world is not None and not self.timer.isActive():
             gid = mujoco.mj_name2id(self.preview_world.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
             self.preview_world.model.geom_pos[gid][:2] = [self.sl_ox.value(), self.sl_oy.value()]
+            self.preview_world.set_target_marker([self.sl_gx.value(), self.sl_gy.value(), 0.374])
             self.preview_world.forward()
             self._render_preview()
 
