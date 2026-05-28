@@ -35,7 +35,7 @@ reproducible scenarios, instead of judging each one from a separate demo.
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
 | **Learning** | a Gymnasium reaching env + an **SAC** baseline, compared against the classical controllers |
 | **Benchmark** | one command → metrics table + comparison plots, with **fair, auto-tuned gains** |
-| **GUI** | a PySide6 control center with an embedded live 3D view, per-controller gains, planner integration, and live telemetry |
+| **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package, typed interfaces, `pytest` suite, headless rendering, ruff, GitHub Actions CI |
 
 ## Quickstart
@@ -120,9 +120,11 @@ World (MuJoCo wrapper) ── state, M(q), J, bias, render
 
 ![control center](media/gui.gif)
 
-Library-backed (no subprocess/JSON), with an embedded live MuJoCo view,
-per-controller gain fields, planner integration, and a real-time error plot.
-See [docs/gui.md](docs/gui.md).
+Mode-based (Reach · Obstacle Avoidance · Pick & Place · RL Reach · Benchmark)
+and library-backed (no subprocess/JSON). Each mode offers **Watch Sim** — the
+interactive MuJoCo viewer plus an embedded live view and real-time telemetry —
+or **Run Sim**, a headless evaluation that reports results and plots. See
+[docs/gui.md](docs/gui.md).
 
 ## Earlier prototypes
 

@@ -15,7 +15,7 @@ lock-step with each module.
 | [Optimization & optimal control](theory/optimization.md) | iLQR, TSID (QP), time-optimal timing, controller auto-tuning |
 | [Benchmark suite](theory/benchmark.md) | reproducible controller + planner comparison, metrics, results |
 | [Deeper analysis](analysis.md) | trajectory profiles, planner workspace paths, tuning convergence, controller scorecard |
-| [Control center (GUI)](gui.md) | the interactive PySide6 app — live 3D, gains, planner, telemetry |
+| [Control center (GUI)](gui.md) | mode-based PySide6 app — Watch Sim (interactive viewer + telemetry) or Run Sim (headless) |
 | [Reinforcement learning](rl.md) | Gymnasium reach env + SAC baseline vs. classical controllers |
 | [Tasks: pick-and-place](tasks.md) | the full grasp → carry → place pipeline |
 

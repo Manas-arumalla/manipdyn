@@ -1,6 +1,6 @@
 # Control center (GUI)
 
-A PySide6 desktop app for driving the lab interactively.
+A mode-based PySide6 desktop app for driving the whole lab interactively.
 
 ```bash
 pip install -e "./manipdyn[gui]"
@@ -9,29 +9,36 @@ manipdyn gui
 
 ![control center](../media/gui.png)
 
-## What it does
+## Modes
 
-* **Embedded live 3D view** — the actual MuJoCo scene rendered in-window as the
-  arm moves (a `QTimer` steps physics on the main thread and streams offscreen
-  frames, so the GL context is never touched cross-thread and the UI stays
-  responsive).
-* **Scene picker** — `scene_base`, `scene` (with obstacle), `scene_base_gripper`.
-* **Every controller** — all 8 in a dropdown, with **per-controller gain
-  fields** auto-populated from each controller's tuning spec (and pre-filled
-  with the *tuned* gains when "Use tuned gains" is checked).
-* **Planner integration** — pick RRT / RRT-Connect / RRT\* / Informed RRT\* /
-  PRM for joint-space controllers; the chosen planner finds a path, which is
-  shortcut and time-parameterized, then tracked. Falls back to a direct move if
-  no path is found.
-* **Cartesian target** — type an (x, y, z) goal; IK supplies the joint goal for
-  joint-space controllers, and the red marker shows the target.
-* **Live telemetry** — a real-time end-effector-error plot.
-* **One-click benchmark** — runs the controller benchmark in a background
-  thread and shows the results table.
+Pick a **mode**; the configuration panel changes to match it:
+
+| Mode | What it does | Configure |
+|------|--------------|-----------|
+| **Reach** | a controller drives the EE to a Cartesian target | controller, tuned/manual gains, target (x, y, z) |
+| **Obstacle Avoidance** | a planner finds a detour around the pillar, tracked by computed-torque control | planner |
+| **Pick & Place** | the full cube-on-table task (top-down grasp → base-rotation carry → place) | — |
+| **RL Reach** | the learned SAC policy reaches a sampled goal | goal seed |
+| **Benchmark** | scores every controller and planner, writes tables + plots | which / duration / trials |
+
+## Two ways to run — consistent across modes
+
+* **Watch Sim** opens the **interactive MuJoCo viewer** (orbit / zoom the real
+  3D scene) *and* an embedded live view, and streams live telemetry — the
+  stat cards (time, metric, phase) and the real-time error plot — as it runs.
+* **Run Sim** runs the same scenario **headless** in a background thread,
+  faster than real time, and reports results/plots (no viewer). Benchmark mode
+  is Run-only and additionally writes `benchmarks/results/`.
+
+Physics is stepped on the main thread (so the MuJoCo GL context is never touched
+cross-thread), while the heavy setup — IK, planning, grasp solving, policy
+loading — runs in a worker so the UI never freezes.
 
 ## Architecture
 
-The GUI imports the `manipdyn` library directly and builds a `World`, a
-`Controller`, and (optionally) a planned trajectory in-process. It shares the
-same code paths as the benchmark, so it stays in step with the rest of the
-package and is independent of the working directory.
+The GUI imports the `manipdyn` library directly: each mode is a small *engine*
+that builds its scenario in `prepare()` and advances one control step per
+`step()`, returning telemetry. Both the live (`QTimer` + viewer) and headless
+(worker thread) drivers consume that same interface, and the pick-and-place
+engine reuses the exact pipeline in `manipdyn.tasks.pick_place` that the
+headless demo renders — so the GUI never drifts from the rest of the package.

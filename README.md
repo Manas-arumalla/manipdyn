@@ -40,7 +40,7 @@ the numbers.
 | **Learning** | a Gymnasium reach env + an **SAC** baseline, scored against the classical controllers |
 | **Benchmark** | one command → metrics table + comparison plots, with fair auto-tuned gains |
 | **Tasks** | a complete **pick-and-place** (grasp → base-rotation carry → stable place) |
-| **GUI** | a PySide6 control center with an embedded live 3D view, per-controller gains, planner integration, and live telemetry |
+| **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package · typed interfaces · `pytest` suite · headless rendering · ruff · GitHub Actions CI |
 
 ## Quickstart
@@ -118,9 +118,10 @@ Beyond the headline tables, each method is studied in depth — full write-up in
 
 ## Control center
 
-A PySide6 desktop app drives the lab interactively: pick a controller and
-planner, type a Cartesian target, and watch the embedded live MuJoCo view and
-the real-time end-effector-error plot.
+A mode-based PySide6 desktop app drives the whole lab interactively — pick a
+**mode** (Reach · Obstacle Avoidance · Pick & Place · RL Reach · Benchmark),
+configure it, then **Watch Sim** (opens the interactive MuJoCo viewer + live
+telemetry) or **Run Sim** (headless evaluation → results & plots).
 
 <img src="manipdyn/media/gui.gif" width="80%" alt="interactive control center"/>
 
