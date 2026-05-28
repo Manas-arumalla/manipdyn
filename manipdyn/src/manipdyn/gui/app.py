@@ -98,6 +98,26 @@ QStatusBar {{ color: #9aa3b2; }}
 """
 
 
+# Framed free cameras per scene, so the embedded view always reads cleanly
+# (not a steep top-down that makes the arm look like it touches the floor).
+_CAMS = {
+    "scene_base": dict(lookat=(0.05, -0.05, 0.5), distance=2.0, azimuth=150, elevation=-18),
+    "scene_obstacle": dict(lookat=(-0.35, 0.25, 0.4), distance=2.1, azimuth=55, elevation=-22),
+    "scene_pick": dict(lookat=(-0.18, -0.31, 0.42), distance=1.7, azimuth=215, elevation=-20),
+}
+
+
+def _make_cam(scene: str) -> mujoco.MjvCamera:
+    cam = mujoco.MjvCamera()
+    cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+    c = _CAMS.get(scene, _CAMS["scene_base"])
+    cam.lookat[:] = c["lookat"]
+    cam.distance = c["distance"]
+    cam.azimuth = c["azimuth"]
+    cam.elevation = c["elevation"]
+    return cam
+
+
 def _card(title: str) -> tuple[QFrame, QVBoxLayout]:
     frame = QFrame()
     frame.setObjectName("card")
@@ -264,6 +284,8 @@ class ObstacleEngine:
     metric = "EE error to goal (mm)"
     steps_per_tick = 16
 
+    scene = "scene_obstacle"
+
     def __init__(self, planner_name, obstacle_xy=None, goal_xyz=None):
         self.planner_name = planner_name
         self.obstacle_xy = obstacle_xy
@@ -332,6 +354,7 @@ class ObstacleEngine:
 class PickPlaceEngine:
     metric = "cube-to-target (mm)"
     steps_per_tick = 18
+    scene = "scene_pick"
 
     def prepare(self):
         self.world = World(scene=pick_place.SCENE, ee_site=pick_place.EE_SITE)
@@ -374,6 +397,7 @@ class PickPlaceEngine:
 class RLEngine:
     metric = "EE-to-goal (mm)"
     steps_per_tick = 2
+    scene = "scene_base"
 
     def __init__(self, seed):
         self.seed = seed
@@ -499,6 +523,7 @@ class ManipdynGUI(QMainWindow):
         self.viewer = None
         self.preview_world: World | None = None
         self.preview_renderer: mujoco.Renderer | None = None
+        self._cam = _make_cam("scene_base")
         self.gain_fields: dict[str, QLineEdit] = {}
         self._pending_watch = False
 
@@ -825,6 +850,7 @@ class ManipdynGUI(QMainWindow):
     def _on_prepared(self, engine) -> None:
         self.engine = engine
         self.stat_err[1].setText("—")
+        self._cam = _make_cam(getattr(engine, "scene", "scene_base"))
         try:
             self.renderer = mujoco.Renderer(engine.world.model, height=400, width=620)
         except Exception as exc:
@@ -868,7 +894,7 @@ class ManipdynGUI(QMainWindow):
             self._finish()
 
     def _render_embedded(self) -> None:
-        self.renderer.update_scene(self.engine.world.data)
+        self.renderer.update_scene(self.engine.world.data, camera=self._cam)
         frame = self.renderer.render()
         img = QImage(
             frame.data, frame.shape[1], frame.shape[0], 3 * frame.shape[1], QImage.Format_RGB888
@@ -944,6 +970,9 @@ class ManipdynGUI(QMainWindow):
                 self.view.setPixmap(QPixmap())
                 self.view.setText("Configure, then Watch Sim or Run Sim")
                 return
+            self._cam = _make_cam(
+                "scene_obstacle" if mode == "Obstacle Avoidance" else "scene_base"
+            )
             self.preview_world = w
             self.preview_renderer = mujoco.Renderer(w.model, height=400, width=620)
             self._render_preview()
@@ -953,7 +982,7 @@ class ManipdynGUI(QMainWindow):
     def _render_preview(self) -> None:
         if self.preview_renderer is None or self.preview_world is None:
             return
-        self.preview_renderer.update_scene(self.preview_world.data)
+        self.preview_renderer.update_scene(self.preview_world.data, camera=self._cam)
         frame = self.preview_renderer.render()
         img = QImage(
             frame.data, frame.shape[1], frame.shape[0], 3 * frame.shape[1], QImage.Format_RGB888
