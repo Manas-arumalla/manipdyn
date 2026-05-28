@@ -38,6 +38,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QPushButton,
     QSizePolicy,
+    QSlider,
     QSpinBox,
     QStackedWidget,
     QTextEdit,
@@ -88,6 +89,11 @@ QPushButton#run:hover {{ background: #2fd36b; }}
 QPushButton#stop {{ background: #2a1416; border: 1px solid {DANGER}; color: #ff9b9b; }}
 QTextEdit {{ background: #0c0e12; border: 1px solid #2c313c; border-radius: 8px;
              font-family: 'Consolas', monospace; font-size: 9pt; color: #cfd6e4; }}
+QSlider::groove:horizontal {{ height: 5px; background: #2c313c; border-radius: 3px; }}
+QSlider::sub-page:horizontal {{ background: {ACCENT}; border-radius: 3px; }}
+QSlider::handle:horizontal {{ background: #ffffff; width: 14px; margin: -6px 0;
+                              border-radius: 7px; }}
+QSlider::handle:horizontal:hover {{ background: {ACCENT}; }}
 QStatusBar {{ color: #9aa3b2; }}
 """
 
@@ -102,6 +108,42 @@ def _card(title: str) -> tuple[QFrame, QVBoxLayout]:
     lab.setObjectName("cardTitle")
     outer.addWidget(lab)
     return frame, outer
+
+
+class AxisSlider(QWidget):
+    """A labeled draggable slider over a float range, in metres."""
+
+    changed = Signal()
+
+    def __init__(self, label: str, lo: float, hi: float, default: float):
+        super().__init__()
+        self._lo, self._hi = lo, hi
+        row = QHBoxLayout(self)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(8)
+        name = QLabel(label)
+        name.setFixedWidth(58)
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setRange(0, 1000)
+        self.slider.setValue(int((default - lo) / (hi - lo) * 1000))
+        self.slider.valueChanged.connect(self._on)
+        self.readout = QLabel()
+        self.readout.setFixedWidth(56)
+        self.readout.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        row.addWidget(name)
+        row.addWidget(self.slider, 1)
+        row.addWidget(self.readout)
+        self._update()
+
+    def _on(self) -> None:
+        self._update()
+        self.changed.emit()
+
+    def _update(self) -> None:
+        self.readout.setText(f"{self.value():.2f} m")
+
+    def value(self) -> float:
+        return self._lo + self.slider.value() / 1000 * (self._hi - self._lo)
 
 
 # ------------------------------------------------------------------- live plot
@@ -194,6 +236,13 @@ class ReachEngine:
         self._errs.append(err)
         return {"t": float(self.world.time), "err_mm": err, "phase": self.ctrl_name}
 
+    def retarget(self, xyz) -> None:
+        """Move the goal live (used when the target slider is dragged mid-run)."""
+        self.target_xyz = np.asarray(xyz, float)
+        self.world.set_target_marker(self.target_xyz)
+        q = IKSolver(self.world).solve(self.target_xyz, q_guess=self.world.qpos_arm).q
+        self.target.q, self.target.x = q, self.target_xyz
+
     def done(self):
         return self._k >= self._n
 
@@ -215,11 +264,15 @@ class ObstacleEngine:
     metric = "EE error to goal (mm)"
     steps_per_tick = 16
 
-    def __init__(self, planner_name):
+    def __init__(self, planner_name, obstacle_xy=None):
         self.planner_name = planner_name
+        self.obstacle_xy = obstacle_xy
 
     def prepare(self):
         self.world = World(scene="scene_obstacle")
+        if self.obstacle_xy is not None:
+            gid = mujoco.mj_name2id(self.world.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
+            self.world.model.geom_pos[gid][:2] = self.obstacle_xy
         self.world.reset(_OBS_START)
         planner = PLANNERS[self.planner_name](
             self.world, seed=0, **_PLANNER_KW.get(self.planner_name, {})
@@ -434,6 +487,8 @@ class ManipdynGUI(QMainWindow):
         self.engine = None
         self.renderer: mujoco.Renderer | None = None
         self.viewer = None
+        self.preview_world: World | None = None
+        self.preview_renderer: mujoco.Renderer | None = None
         self.gain_fields: dict[str, QLineEdit] = {}
         self._pending_watch = False
 
@@ -586,13 +641,15 @@ class ManipdynGUI(QMainWindow):
         self.gains_form = QFormLayout()
         self.gains_form.setSpacing(6)
         box.addLayout(self.gains_form)
-        tform = QFormLayout()
-        tform.setSpacing(8)
-        self.ent_x, self.ent_y, self.ent_z = QLineEdit("0.45"), QLineEdit("0.15"), QLineEdit("0.5")
-        tform.addRow("target X (m)", self.ent_x)
-        tform.addRow("target Y (m)", self.ent_y)
-        tform.addRow("target Z (m)", self.ent_z)
-        box.addLayout(tform)
+        drag = QLabel("Drag to place the target — the red marker moves in-scene:")
+        drag.setObjectName("sub")
+        box.addWidget(drag)
+        self.sl_x = AxisSlider("target X", -0.7, 0.7, 0.45)
+        self.sl_y = AxisSlider("target Y", -0.7, 0.7, 0.15)
+        self.sl_z = AxisSlider("target Z", 0.2, 0.85, 0.5)
+        for s in (self.sl_x, self.sl_y, self.sl_z):
+            s.changed.connect(self._on_target_changed)
+            box.addWidget(s)
         return card
 
     def _panel_obstacle(self) -> QWidget:
@@ -604,14 +661,15 @@ class ManipdynGUI(QMainWindow):
         self.cb_obs_planner.setCurrentText("rrt_connect")
         form.addRow("Planner", self.cb_obs_planner)
         box.addLayout(form)
-        note = QLabel(
-            "The straight-line joint motion is blocked by the pillar; the planner "
-            "finds a detour, which is time-parameterized and tracked by "
-            "computed-torque control."
-        )
-        note.setObjectName("sub")
-        note.setWordWrap(True)
-        box.addWidget(note)
+        drag = QLabel("Drag to place the pillar — it moves in-scene; the planner routes around it:")
+        drag.setObjectName("sub")
+        drag.setWordWrap(True)
+        box.addWidget(drag)
+        self.sl_ox = AxisSlider("pillar X", -0.78, -0.36, -0.57)
+        self.sl_oy = AxisSlider("pillar Y", 0.10, 0.50, 0.30)
+        for s in (self.sl_ox, self.sl_oy):
+            s.changed.connect(self._on_obstacle_changed)
+            box.addWidget(s)
         return card
 
     def _panel_pick(self) -> QWidget:
@@ -674,7 +732,7 @@ class ManipdynGUI(QMainWindow):
 
     # ---- mode / controller switching ------------------------------------
     def _select_mode(self, idx: int) -> None:
-        self.stop_sim()
+        self._teardown_sim()
         self.mode_group.button(idx).setChecked(True)
         self.config_stack.setCurrentIndex(idx)
         is_bench = _MODES[idx] == "Benchmark"
@@ -682,6 +740,8 @@ class ManipdynGUI(QMainWindow):
         self.btn_watch.setToolTip(
             "Benchmark runs headless only" if is_bench else "Interactive viewer + live telemetry"
         )
+        self.plot.clear()
+        self._build_preview()
         self.status.showMessage(f"Mode: {_MODES[idx]}")
 
     def _on_controller_changed(self, name: str) -> None:
@@ -711,10 +771,12 @@ class ManipdynGUI(QMainWindow):
     def _make_engine(self):
         mode = _MODES[self.config_stack.currentIndex()]
         if mode == "Reach":
-            tgt = [float(self.ent_x.text()), float(self.ent_y.text()), float(self.ent_z.text())]
+            tgt = [self.sl_x.value(), self.sl_y.value(), self.sl_z.value()]
             return ReachEngine("scene_base", self.cb_ctrl.currentText(), self._read_gains(), tgt)
         if mode == "Obstacle Avoidance":
-            return ObstacleEngine(self.cb_obs_planner.currentText())
+            return ObstacleEngine(
+                self.cb_obs_planner.currentText(), [self.sl_ox.value(), self.sl_oy.value()]
+            )
         if mode == "Pick & Place":
             return PickPlaceEngine()
         if mode == "RL Reach":
@@ -723,10 +785,11 @@ class ManipdynGUI(QMainWindow):
 
     # ---- start / stop ----------------------------------------------------
     def _start(self, watch: bool) -> None:
-        self.stop_sim()
+        self._teardown_sim()
         if _MODES[self.config_stack.currentIndex()] == "Benchmark":
             self._run_benchmark()
             return
+        self._clear_preview()
         try:
             engine = self._make_engine()
         except Exception as exc:
@@ -804,9 +867,11 @@ class ManipdynGUI(QMainWindow):
         self._finish()
 
     def _finish(self) -> None:
-        if self.engine is not None:
-            self.results.setPlainText(self.engine.summary())
-        self._close_viewer()
+        summary = self.engine.summary() if self.engine is not None else ""
+        self._teardown_sim()
+        if summary:
+            self.results.setPlainText(summary)
+        self._build_preview()
         self._set_busy(False, "Done")
 
     def _update_telemetry(self, info: dict) -> None:
@@ -814,7 +879,7 @@ class ManipdynGUI(QMainWindow):
         self.stat_err[1].setText(f"{info.get('err_mm', 0):.2f}")
         self.stat_phase[1].setText(str(info.get("phase", "—")))
 
-    def stop_sim(self) -> None:
+    def _teardown_sim(self) -> None:
         if self.timer.isActive():
             self.timer.stop()
         rw = getattr(self, "_rw", None)
@@ -826,6 +891,10 @@ class ManipdynGUI(QMainWindow):
             self.renderer.close()
             self.renderer = None
         self.engine = None
+
+    def stop_sim(self) -> None:
+        self._teardown_sim()
+        self._build_preview()
         self._set_busy(False, "Stopped")
 
     def _close_viewer(self) -> None:
@@ -835,6 +904,62 @@ class ManipdynGUI(QMainWindow):
             except Exception:
                 pass
             self.viewer = None
+
+    # ---- idle preview (draggable placement) -----------------------------
+    def _build_preview(self) -> None:
+        """Show a static, draggable preview of the current scene when idle."""
+        self._clear_preview()
+        mode = _MODES[self.config_stack.currentIndex()]
+        try:
+            if mode == "Reach":
+                w = World(scene="scene_base")
+                w.reset(w.home_qpos_arm)
+                w.set_target_marker([self.sl_x.value(), self.sl_y.value(), self.sl_z.value()])
+            elif mode == "Obstacle Avoidance":
+                w = World(scene="scene_obstacle")
+                gid = mujoco.mj_name2id(w.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
+                w.model.geom_pos[gid][:2] = [self.sl_ox.value(), self.sl_oy.value()]
+                w.reset(_OBS_START)
+            else:
+                self.view.setPixmap(QPixmap())
+                self.view.setText("Configure, then Watch Sim or Run Sim")
+                return
+            self.preview_world = w
+            self.preview_renderer = mujoco.Renderer(w.model, height=400, width=620)
+            self._render_preview()
+        except Exception:
+            self._clear_preview()
+
+    def _render_preview(self) -> None:
+        if self.preview_renderer is None or self.preview_world is None:
+            return
+        self.preview_renderer.update_scene(self.preview_world.data)
+        frame = self.preview_renderer.render()
+        img = QImage(
+            frame.data, frame.shape[1], frame.shape[0], 3 * frame.shape[1], QImage.Format_RGB888
+        )
+        self.view.setPixmap(QPixmap.fromImage(img).scaled(self.view.size(), Qt.KeepAspectRatio))
+
+    def _clear_preview(self) -> None:
+        if self.preview_renderer is not None:
+            self.preview_renderer.close()
+            self.preview_renderer = None
+        self.preview_world = None
+
+    def _on_target_changed(self) -> None:
+        xyz = [self.sl_x.value(), self.sl_y.value(), self.sl_z.value()]
+        if self.timer.isActive() and isinstance(self.engine, ReachEngine):
+            self.engine.retarget(xyz)  # live re-targeting during Watch
+        elif self.preview_world is not None:
+            self.preview_world.set_target_marker(xyz)
+            self._render_preview()
+
+    def _on_obstacle_changed(self) -> None:
+        if self.preview_world is not None and not self.timer.isActive():
+            gid = mujoco.mj_name2id(self.preview_world.model, mujoco.mjtObj.mjOBJ_GEOM, "obstacle")
+            self.preview_world.model.geom_pos[gid][:2] = [self.sl_ox.value(), self.sl_oy.value()]
+            self.preview_world.forward()
+            self._render_preview()
 
     # ---- benchmark mode --------------------------------------------------
     def _run_benchmark(self) -> None:
@@ -868,7 +993,8 @@ class ManipdynGUI(QMainWindow):
         self.status.showMessage(f"Failed: {msg}")
 
     def closeEvent(self, event) -> None:
-        self.stop_sim()
+        self._teardown_sim()
+        self._clear_preview()
         super().closeEvent(event)
 
 

@@ -21,6 +21,11 @@ Pick a **mode**; the configuration panel changes to match it:
 | **RL Reach** | the learned SAC policy reaches a sampled goal | goal seed |
 | **Benchmark** | scores every controller and planner, writes tables + plots | which / duration / trials |
 
+**Interactive placement.** In Reach and Obstacle Avoidance, drag the sliders to
+position the target marker or the pillar — the scene re-renders live in the
+embedded view, so you place it by eye before running. Dragging the target while
+a Reach *Watch* is running re-solves IK and re-aims the controller on the fly.
+
 ## Two ways to run — consistent across modes
 
 * **Watch Sim** opens the **interactive MuJoCo viewer** (orbit / zoom the real
