@@ -39,6 +39,21 @@ class RobotSpec:
     home_qpos: tuple[float, ...]
 
 
+def prefixed(spec: RobotSpec, prefix: str) -> RobotSpec:
+    """A copy of ``spec`` with ``prefix`` prepended to every joint/site name.
+
+    ``mujoco.MjSpec`` attaches a sub-model under a name prefix, so a prefixed
+    spec lets ``World`` discover one arm of a multi-robot scene (e.g.
+    ``prefixed(UR5E, "left_")`` finds ``left_shoulder_pan_joint`` etc.).
+    """
+    return RobotSpec(
+        name=f"{prefix}{spec.name}",
+        arm_joint_names=tuple(prefix + n for n in spec.arm_joint_names),
+        ee_site_candidates=tuple(prefix + c for c in spec.ee_site_candidates),
+        home_qpos=spec.home_qpos,
+    )
+
+
 #: The UR5e — the lab's default arm. These are exactly the values ``World`` used
 #: before ``RobotSpec`` existed, so the default path is unchanged.
 UR5E = RobotSpec(

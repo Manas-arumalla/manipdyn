@@ -41,6 +41,14 @@ class World:
         A pre-built :class:`mujoco.MjModel` to wrap directly (e.g. one produced
         procedurally by :mod:`manipdyn.models.procedural`). When given, ``scene``
         is ignored.
+    data:
+        A :class:`mujoco.MjData` to share instead of allocating a fresh one.
+        Used to drive a second arm in the *same* simulation (multi-robot): give
+        both ``World`` s the same model and data, and step only one.
+    home:
+        Reset to the home configuration on construction (default). Pass
+        ``False`` for a second, data-sharing arm so it does not wipe the shared
+        state set up by the first.
     """
 
     def __init__(
@@ -50,6 +58,8 @@ class World:
         ee_site: str | None = None,
         robot: RobotSpec = UR5E,
         model: mujoco.MjModel | None = None,
+        data: mujoco.MjData | None = None,
+        home: bool = True,
     ):
         if model is not None:
             self.scene_path = "<in-memory>"
@@ -62,7 +72,7 @@ class World:
                 path = scene_path(scene)
             self.scene_path = path
             self.model = mujoco.MjModel.from_xml_path(path)
-        self.data = mujoco.MjData(self.model)
+        self.data = data if data is not None else mujoco.MjData(self.model)
         if timestep is not None:
             self.model.opt.timestep = float(timestep)
 
@@ -70,7 +80,8 @@ class World:
         self._ee_site_override = ee_site
         self._discover_arm()
         self._discover_ee_site()
-        self.reset_home()
+        if home:
+            self.reset_home()
 
     # ------------------------------------------------------------------ setup
     def _discover_arm(self) -> None:

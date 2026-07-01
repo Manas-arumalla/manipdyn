@@ -22,6 +22,8 @@ import mujoco
 import numpy as np
 
 from manipdyn.models import scene_path
+from manipdyn.sim.robot import UR5E, prefixed
+from manipdyn.sim.world import World
 
 # A distinct, readable palette; cubes cycle through it.
 _PALETTE = (
@@ -118,3 +120,85 @@ def build_clutter_scene(
         xyaxes=[1, 0, 0, 0, 1, 0],
     )
     return spec.compile()
+
+
+LEFT_PREFIX, RIGHT_PREFIX = "left_", "right_"
+
+
+def build_two_arm_scene(
+    separation: float = 0.95,
+    base_scene: str = "scene_base_gripper",
+    cube_xy: tuple[float, float] = (-0.30, 0.10),
+    table_center: tuple[float, float] = (-0.30, 0.0),
+) -> mujoco.MjModel:
+    """Two UR5e + grippers facing each other across a table, with a graspable cube.
+
+    The arms are attached with ``left_`` / ``right_`` name prefixes (via
+    ``MjSpec``) so they coexist in one model. Two weld equalities —
+    ``left_grasp`` and ``right_grasp`` (gripper_base <-> object) — are provided
+    inactive, so a task can grasp with one arm and hand the object to the other.
+    Wrap the result with :func:`two_arm_worlds`.
+    """
+    spec = mujoco.MjSpec()
+    spec.worldbody.add_geom(
+        name="floor", type=mujoco.mjtGeom.mjGEOM_PLANE, size=[0, 0, 0.05], rgba=[0.3, 0.34, 0.4, 1]
+    )
+    spec.worldbody.add_light(pos=[0, 0, 2.0], dir=[0, 0, -1])
+
+    half = separation / 2.0
+    for prefix, y, yaw in ((LEFT_PREFIX, half, 0.0), (RIGHT_PREFIX, -half, np.pi)):
+        child = mujoco.MjSpec.from_file(scene_path(base_scene))
+        frame = spec.worldbody.add_frame(
+            pos=[0.0, y, 0.0], quat=[np.cos(yaw / 2), 0.0, 0.0, np.sin(yaw / 2)]
+        )
+        frame.attach_body(child.worldbody.first_body(), prefix, "")
+
+    # A shared table and a graspable cube.
+    tx, ty = table_center
+    spec.worldbody.add_geom(
+        name="table_top",
+        type=mujoco.mjtGeom.mjGEOM_BOX,
+        pos=[tx, ty, 0.355],
+        size=[0.12, 0.12, 0.01],
+        rgba=[0.62, 0.43, 0.26, 1.0],
+    )
+    cube = spec.worldbody.add_body(name="object", pos=[cube_xy[0], cube_xy[1], 0.39])
+    cube.add_freejoint(name="object_free")
+    cube.add_geom(
+        name="object_geom",
+        type=mujoco.mjtGeom.mjGEOM_BOX,
+        size=[0.025, 0.025, 0.025],
+        rgba=[0.90, 0.30, 0.12, 1.0],
+        mass=0.05,
+        friction=[1.5, 0.05, 0.001],
+    )
+
+    for prefix in (LEFT_PREFIX, RIGHT_PREFIX):
+        spec.add_equality(
+            name=f"{prefix}grasp",
+            type=mujoco.mjtEq.mjEQ_WELD,
+            objtype=mujoco.mjtObj.mjOBJ_BODY,
+            name1=f"{prefix}gripper_base",
+            name2="object",
+            active=False,
+        )
+    return spec.compile()
+
+
+def two_arm_worlds(model: mujoco.MjModel) -> tuple[World, World]:
+    """Wrap a two-arm model as ``(left, right)`` Worlds sharing one simulation.
+
+    Both wrap the same model/data; step only ``left`` (or ``mj_step`` once) after
+    applying each arm's torque with ``apply_arm_torque``.
+    """
+    left = World(model=model, robot=prefixed(UR5E, LEFT_PREFIX), ee_site=f"{LEFT_PREFIX}pinch")
+    right = World(
+        model=model,
+        robot=prefixed(UR5E, RIGHT_PREFIX),
+        ee_site=f"{RIGHT_PREFIX}pinch",
+        data=left.data,
+        home=False,
+    )
+    right.set_arm_qpos(right.home_qpos_arm)
+    left.forward()
+    return left, right
