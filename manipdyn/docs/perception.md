@@ -96,6 +96,24 @@ target = select_object(objs, label="cube_red")  # or near=some_xy
 
 ![multi-object perception](../benchmarks/results/perception_multi.png)
 
+## Parametric scenes (domain randomization)
+
+Clutter scenes don't have to be authored by hand. `build_clutter_scene` uses
+`mujoco.MjSpec` to generate a UR5e + table + *N* randomly-placed cubes and
+compile a model that `World` wraps directly — deterministic per seed, so every
+seed is a fresh, reproducible layout:
+
+```python
+from manipdyn.sim import World
+from manipdyn.models.procedural import build_clutter_scene
+
+model = build_clutter_scene(n_cubes=4, seed=1)
+world = World(model=model, ee_site="pinch")   # perception then finds all 4
+```
+
+This is the basis for domain randomization (a new layout every episode) and for
+perception/RL over scenes nobody had to write MJCF for.
+
 ## What this does and doesn't do
 
 * It replaces the **oracle object pose** with a *sensed* one — the grasp is

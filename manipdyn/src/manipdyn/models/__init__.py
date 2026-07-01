@@ -12,7 +12,14 @@ from pathlib import Path
 _MODELS_DIR = Path(__file__).resolve().parent
 
 # Scenes shipped with the package (without the .xml suffix).
-AVAILABLE_SCENES = ("scene", "scene_base", "scene_base_gripper", "scene_obstacle", "scene_pick")
+AVAILABLE_SCENES = (
+    "scene",
+    "scene_base",
+    "scene_base_gripper",
+    "scene_obstacle",
+    "scene_pick",
+    "scene_clutter",
+)
 
 
 def models_dir() -> Path:

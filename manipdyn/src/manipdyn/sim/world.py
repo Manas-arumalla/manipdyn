@@ -37,6 +37,10 @@ class World:
     robot:
         Which arm to drive. Defaults to the UR5e (:data:`UR5E`); pass another
         :class:`RobotSpec` to load a different manipulator's joints/home.
+    model:
+        A pre-built :class:`mujoco.MjModel` to wrap directly (e.g. one produced
+        procedurally by :mod:`manipdyn.models.procedural`). When given, ``scene``
+        is ignored.
     """
 
     def __init__(
@@ -45,15 +49,19 @@ class World:
         timestep: float | None = None,
         ee_site: str | None = None,
         robot: RobotSpec = UR5E,
+        model: mujoco.MjModel | None = None,
     ):
-        # Accept either a bundled scene name or a direct path to any MJCF file.
-        if os.path.isfile(scene):
-            path = os.path.abspath(scene)
+        if model is not None:
+            self.scene_path = "<in-memory>"
+            self.model = model
         else:
-            path = scene_path(scene)
-
-        self.scene_path = path
-        self.model = mujoco.MjModel.from_xml_path(path)
+            # Accept either a bundled scene name or a direct path to any MJCF file.
+            if os.path.isfile(scene):
+                path = os.path.abspath(scene)
+            else:
+                path = scene_path(scene)
+            self.scene_path = path
+            self.model = mujoco.MjModel.from_xml_path(path)
         self.data = mujoco.MjData(self.model)
         if timestep is not None:
             self.model.opt.timestep = float(timestep)
