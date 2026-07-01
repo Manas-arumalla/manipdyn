@@ -147,11 +147,16 @@ def solve(world: World, object_xy: np.ndarray | None = None) -> PickPlacePlan:
     )
 
 
-def run(world: World, plan: PickPlacePlan | None = None) -> Iterator[dict]:
+def run(world: World, plan: PickPlacePlan | None = None, use_weld: bool = True) -> Iterator[dict]:
     """Drive the full pick-and-place, yielding telemetry once per control step.
 
     The caller advances the generator and may render/sync/capture between steps.
-    Grip commands and the carry weld are applied internally.
+    Grip commands are applied internally.
+
+    ``use_weld`` (default) rigidly holds the cube with a weld while it is carried
+    — robust and deterministic. Set it ``False`` for a **real contact grasp**:
+    the fingers close and the cube is held by friction alone (no weld), which is
+    the honest, physical grasp.
     """
     plan = plan or solve(world)
     m, d = world.model, world.data
@@ -221,12 +226,16 @@ def run(world: World, plan: PickPlacePlan | None = None) -> Iterator[dict]:
     yield from move_path(plan.descend_wps, 0.4, "descend")
     yield from settle(plan.grasp, 0.4, "align")
     grip = GRIP_CLOSE
-    yield from settle(plan.grasp, 0.7, "grasp")
-    grasp_weld(True)
+    # A contact grasp needs a moment longer for the fingers to close and the
+    # grip force to build before the cube is lifted.
+    yield from settle(plan.grasp, 0.7 if use_weld else 1.1, "grasp")
+    if use_weld:
+        grasp_weld(True)
     yield from move_path(plan.lift_wps, 0.4, "lift")
     yield from move_path([plan.pick_hi, plan.place_hi], 1.2, "carry")
     yield from move_path(plan.place_down_wps, 0.4, "lower")
-    grasp_weld(False)
+    if use_weld:
+        grasp_weld(False)
     grip = GRIP_OPEN
     yield from settle(plan.place, 0.6, "release")
     yield from move_path(plan.place_up_wps, 0.4, "retract")

@@ -26,11 +26,18 @@ is picked off one table, carried, and placed on a second table.
    needing no planning.
 4. **Execution** — every move is a time-optimal trajectory tracked by
    computed-torque control.
-5. **Grasp** — the fingers close on the cube, then a weld constraint holds it
-   rigidly while it is carried. The weld's relative pose is set *at grasp time*
-   from the live gripper-to-cube transform; a default weld keeps its
-   *compile-time* relative pose and would fling the cube on activation. A rigid
-   weld is more robust here than a slip-prone friction hold.
+5. **Grasp** — two options. By default (`use_weld=True`) the fingers close on the
+   cube and a weld holds it rigidly while it is carried; the weld's relative pose
+   is set *at grasp time* from the live gripper-to-cube transform (a default weld
+   keeps its *compile-time* pose and would fling the cube on activation). This is
+   deterministic and robust.
+
+   With **`use_weld=False`** the weld is dropped entirely and the cube is held by
+   a **real contact grasp** — the fingers close and *friction alone* carries it
+   through the lift, the base rotation, and the place. With this gripper and cube
+   it completes the whole task (placed within a couple of millimetres, upright),
+   so the weld is a convenience, not a crutch. Pass it through
+   `pick_place.run(world, plan, use_weld=False)`.
 
 ## The object
 
