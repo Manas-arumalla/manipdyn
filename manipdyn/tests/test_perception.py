@@ -79,6 +79,60 @@ def test_estimate_object_pose_matches_truth():
     assert est.n_points >= 20
 
 
+def _clutter_world():
+    """scene_clutter with the arm parked clear of the table for a clean look."""
+    world = World(scene="scene_clutter", ee_site="pinch")
+    look = world.home_qpos_arm.copy()
+    look[1] -= 0.5
+    world.reset(look)
+    world.forward()
+    return world
+
+
+def test_sense_objects_finds_all_cubes():
+    from manipdyn.perception import sense_objects
+
+    world = _clutter_world()
+    cam = _camera(world)
+    with cam:
+        objs = sense_objects(cam, segmentation=True)
+
+    labels = {o.label for o in objs}
+    assert labels == {"cube_red", "cube_green", "cube_blue"}
+    for o in objs:
+        bid = mujoco.mj_name2id(world.model, mujoco.mjtObj.mjOBJ_BODY, o.label)
+        true_xy = world.data.xpos[bid][:2]
+        assert np.linalg.norm(o.top_xy - true_xy) < 0.010
+
+
+def test_sensor_only_clustering_counts_objects():
+    from manipdyn.perception import sense_objects
+
+    world = _clutter_world()
+    cam = _camera(world)
+    with cam:
+        objs = sense_objects(
+            cam,
+            segmentation=False,
+            workspace=(-0.68, -0.30, -0.26, 0.02, 0.37, 0.60),
+        )
+    assert len(objs) == 3  # three cubes recovered without knowing the count
+
+
+def test_select_object_by_label_and_proximity():
+    from manipdyn.perception import select_object, sense_objects
+
+    world = _clutter_world()
+    cam = _camera(world)
+    with cam:
+        objs = sense_objects(cam, segmentation=True)
+
+    assert select_object(objs, label="cube_green").label == "cube_green"
+    blue = mujoco.mj_name2id(world.model, mujoco.mjtObj.mjOBJ_BODY, "cube_blue")
+    nearest = select_object(objs, near=world.data.xpos[blue][:2])
+    assert nearest.label == "cube_blue"
+
+
 def test_deproject_convention_recovers_a_known_point():
     """A single depth pixel deprojects back to a point on the cube's top face."""
     from manipdyn.perception import deproject, object_geom_ids, segment_mask

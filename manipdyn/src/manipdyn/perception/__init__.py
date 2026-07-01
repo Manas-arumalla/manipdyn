@@ -18,11 +18,15 @@ from manipdyn.perception.camera import Camera
 from manipdyn.perception.estimate import (
     ObjectEstimate,
     estimate_object_pose,
+    movable_bodies,
     object_geom_ids,
     segment_mask,
+    select_object,
     sense_object_pose,
+    sense_objects,
 )
 from manipdyn.perception.pointcloud import (
+    cluster_all,
     deproject,
     largest_cluster,
     remove_plane,
@@ -34,10 +38,14 @@ __all__ = [
     "ObjectEstimate",
     "estimate_object_pose",
     "sense_object_pose",
+    "sense_objects",
+    "select_object",
+    "movable_bodies",
     "object_geom_ids",
     "segment_mask",
     "deproject",
     "voxel_downsample",
     "remove_plane",
     "largest_cluster",
+    "cluster_all",
 ]

@@ -75,6 +75,27 @@ the lab's fair-comparison thesis applied to perception:
 Perception pose error: mean **0.2 mm**, max **0.7 mm** with the arm parked clear
 for the look. Numbers regenerate with `python scripts/benchmark_perception.py`.
 
+## Multiple objects (clutter)
+
+`sense_objects` returns an estimate for **every** object, not just one — the
+basis for "find the right thing among clutter". On `scene_clutter` (three
+coloured cubes) it recovers all three to sub-centimetre, and `select_object`
+picks a target by `label` or by proximity (`near=`):
+
+```python
+from manipdyn.perception import Camera, sense_objects, select_object
+
+cam = Camera(World(scene="scene_clutter", ee_site="pinch"), "overhead")
+objs = sense_objects(cam)                       # one ObjectEstimate per cube
+target = select_object(objs, label="cube_red")  # or near=some_xy
+```
+
+* **`segmentation=True`** estimates each movable (free-jointed) body separately.
+* **`segmentation=False`** clusters the scene with no prior on the object count
+  (`cluster_all`), so it finds however many blobs are on the table.
+
+![multi-object perception](../benchmarks/results/perception_multi.png)
+
 ## What this does and doesn't do
 
 * It replaces the **oracle object pose** with a *sensed* one — the grasp is

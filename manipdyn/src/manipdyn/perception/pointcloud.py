@@ -105,15 +105,9 @@ def remove_plane(
     return points[~best_inliers]
 
 
-def largest_cluster(points: np.ndarray, eps: float = 0.012, min_size: int = 8) -> np.ndarray:
-    """Return the biggest Euclidean cluster (single-link within ``eps``).
-
-    Returns the input unchanged if it is smaller than ``min_size`` (nothing to
-    separate) or empty.
-    """
+def _cluster_labels(points: np.ndarray, eps: float) -> tuple[np.ndarray, int]:
+    """Single-link (region-growing) cluster labels; returns ``(labels, n_clusters)``."""
     n = len(points)
-    if n < min_size:
-        return points
     tree = cKDTree(points)
     label = np.full(n, -1, dtype=int)
     current = 0
@@ -129,5 +123,31 @@ def largest_cluster(points: np.ndarray, eps: float = 0.012, min_size: int = 8) -
                     label[q] = current
                     stack.append(q)
         current += 1
-    counts = np.bincount(label)
-    return points[label == counts.argmax()]
+    return label, current
+
+
+def largest_cluster(points: np.ndarray, eps: float = 0.012, min_size: int = 8) -> np.ndarray:
+    """Return the biggest Euclidean cluster (single-link within ``eps``).
+
+    Returns the input unchanged if it is smaller than ``min_size`` (nothing to
+    separate) or empty.
+    """
+    if len(points) < min_size:
+        return points
+    label, _ = _cluster_labels(points, eps)
+    return points[label == np.bincount(label).argmax()]
+
+
+def cluster_all(points: np.ndarray, eps: float = 0.012, min_size: int = 12) -> list[np.ndarray]:
+    """Return every Euclidean cluster of at least ``min_size`` points, largest first.
+
+    Unlike :func:`largest_cluster`, this keeps *all* blobs — the basis for
+    detecting several objects (clutter) rather than a single one.
+    """
+    if len(points) == 0:
+        return []
+    label, k = _cluster_labels(points, eps)
+    clusters = [points[label == c] for c in range(k)]
+    clusters = [c for c in clusters if len(c) >= min_size]
+    clusters.sort(key=len, reverse=True)
+    return clusters

@@ -1,0 +1,56 @@
+<mujoco model="ur5e_clutter">
+  <compiler meshdir="ur5e_model/assets"/>
+  <include file="ur5e_model/ur5e_with_gripper.xml"/>
+
+  <statistic center="-0.18 -0.31 0.35" extent="1.0"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="150" elevation="-22"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <material name="table_top" rgba="0.62 0.43 0.26 1"/>
+    <material name="table_leg" rgba="0.40 0.27 0.16 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 .05" type="plane" material="groundplane"/>
+
+    <!-- Same fixed overhead RGB-D camera as the pick scene (non-physical). -->
+    <camera name="overhead" pos="-0.18 -0.31 1.15" xyaxes="1 0 0 0 1 0" fovy="58"/>
+
+    <!-- A wider table in the arm's natural top-down zone, holding several cubes. -->
+    <body name="table" pos="-0.49 -0.13 0">
+      <geom name="table_top" type="box" pos="0 0 0.355" size="0.16 0.12 0.01" material="table_top"/>
+      <geom name="table_leg_a" type="box" pos="0.14 0.10 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="table_leg_b" type="box" pos="-0.14 0.10 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="table_leg_c" type="box" pos="0.14 -0.10 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+      <geom name="table_leg_d" type="box" pos="-0.14 -0.10 0.1725" size="0.013 0.013 0.1725" material="table_leg"/>
+    </body>
+
+    <!-- Three 50 mm cubes of different colours, spread on the table. -->
+    <body name="cube_red" pos="-0.55 -0.05 0.39">
+      <freejoint name="cube_red_free"/>
+      <geom name="cube_red_geom" type="box" size="0.025 0.025 0.025"
+            rgba="0.90 0.22 0.12 1" mass="0.05" friction="1.5 0.05 0.001"/>
+    </body>
+    <body name="cube_green" pos="-0.46 -0.18 0.39">
+      <freejoint name="cube_green_free"/>
+      <geom name="cube_green_geom" type="box" size="0.025 0.025 0.025"
+            rgba="0.20 0.75 0.28 1" mass="0.05" friction="1.5 0.05 0.001"/>
+    </body>
+    <body name="cube_blue" pos="-0.43 -0.07 0.39">
+      <freejoint name="cube_blue_free"/>
+      <geom name="cube_blue_geom" type="box" size="0.025 0.025 0.025"
+            rgba="0.20 0.34 0.90 1" mass="0.05" friction="1.5 0.05 0.001"/>
+    </body>
+
+    <site name="target_marker" pos="-0.49 -0.13 0.47" size="0.02" rgba="1 0 0 0" type="sphere"/>
+  </worldbody>
+</mujoco>

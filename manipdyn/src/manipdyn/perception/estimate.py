@@ -28,6 +28,7 @@ import mujoco
 import numpy as np
 
 from manipdyn.perception.pointcloud import (
+    cluster_all,
     deproject,
     largest_cluster,
     remove_plane,
@@ -49,6 +50,7 @@ class ObjectEstimate:
     dims: np.ndarray  # (3,) bounding-box extents (m)
     R: np.ndarray  # (3,3) PCA axes (columns), largest-variance first
     n_points: int  # number of points the estimate is built from
+    label: str | None = None  # body name, when known (segmentation mode)
 
 
 def estimate_object_pose(points: np.ndarray) -> ObjectEstimate:
@@ -130,3 +132,85 @@ def sense_object_pose(
             "perception found too few object points — is the object in view and unoccluded?"
         )
     return estimate_object_pose(pts)
+
+
+def movable_bodies(world: World) -> list[str]:
+    """Names of free-jointed bodies — the scene's movable objects."""
+    m = world.model
+    names = []
+    for j in range(m.njnt):
+        if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+            names.append(mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, int(m.jnt_bodyid[j])))
+    return [n for n in names if n]
+
+
+def sense_objects(
+    camera: Camera,
+    *,
+    segmentation: bool = True,
+    object_bodies: list[str] | None = None,
+    workspace: tuple[float, float, float, float, float, float] | None = None,
+    voxel: float = 0.003,
+    min_points: int = 15,
+    eps: float = 0.012,
+) -> list[ObjectEstimate]:
+    """Perceive **several** objects (clutter) and return an estimate for each.
+
+    With ``segmentation=True`` each movable body (or the given ``object_bodies``)
+    is segmented and estimated individually — its ``label`` is set. With
+    ``segmentation=False`` the scene is clustered instead (unknown object count):
+    the table plane is dropped and every remaining blob becomes an estimate.
+    Results are sorted largest-first (most points).
+    """
+    world = camera.world
+    depth = camera.depth()
+    intr, extr = camera.intrinsics, camera.extrinsics
+    out: list[ObjectEstimate] = []
+
+    if segmentation:
+        seg = camera.segmentation()
+        bodies = object_bodies if object_bodies is not None else movable_bodies(world)
+        for body in bodies:
+            mask = segment_mask(seg, object_geom_ids(world, body))
+            pts = voxel_downsample(deproject(depth, intr, extr, mask=mask), voxel)
+            if len(pts) >= min_points:
+                est = estimate_object_pose(pts)
+                est.label = body
+                out.append(est)
+    else:
+        pts = deproject(depth, intr, extr)
+        if workspace is not None:
+            xlo, xhi, ylo, yhi, zlo, zhi = workspace
+            inside = (
+                (pts[:, 0] >= xlo)
+                & (pts[:, 0] <= xhi)
+                & (pts[:, 1] >= ylo)
+                & (pts[:, 1] <= yhi)
+                & (pts[:, 2] >= zlo)
+                & (pts[:, 2] <= zhi)
+            )
+            pts = pts[inside]
+        pts = remove_plane(pts)
+        for cluster in cluster_all(pts, eps=eps, min_size=min_points):
+            est = estimate_object_pose(voxel_downsample(cluster, voxel))
+            out.append(est)
+
+    out.sort(key=lambda e: e.n_points, reverse=True)
+    return out
+
+
+def select_object(
+    objects: list[ObjectEstimate],
+    *,
+    label: str | None = None,
+    near: np.ndarray | None = None,
+) -> ObjectEstimate | None:
+    """Pick one estimate: by ``label``, or nearest (in XY) to ``near``, else the first."""
+    if not objects:
+        return None
+    if label is not None:
+        return next((o for o in objects if o.label == label), None)
+    if near is not None:
+        near = np.asarray(near, dtype=float)[:2]
+        return min(objects, key=lambda o: float(np.linalg.norm(o.top_xy - near)))
+    return objects[0]
