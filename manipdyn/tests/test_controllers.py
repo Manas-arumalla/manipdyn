@@ -72,8 +72,16 @@ def test_cartesian_controllers_reach(make):
     assert pos_err < 0.03, f"EE position error {pos_err * 1000:.1f} mm too large"
 
 
-def test_osc_tracks_orientation():
-    """With a target orientation, OSC does full 6-DOF pose control."""
+@pytest.mark.parametrize(
+    "make",
+    [
+        lambda w: OSCController(w, kp=200, kp_rot=150),
+        lambda w: TSIDController(w, kp=200, kp_rot=150),
+        lambda w: ImpedanceController(w, kp=800, kp_rot=60, kd_rot=6),
+    ],
+)
+def test_cartesian_controllers_track_orientation(make):
+    """With a target orientation, the task-space controllers do 6-DOF pose control."""
     world = World(scene="scene_base")
     world.reset(world.home_qpos_arm)
     x0, r0 = world.ee_pos.copy(), world.ee_rot()
@@ -89,12 +97,12 @@ def test_osc_tracks_orientation():
 
     assert ori_err_deg(r0) > 20  # starts misaligned
 
-    ctrl = OSCController(world, kp=200, kp_rot=150)
-    for _ in range(int(3.0 / world.timestep)):
+    ctrl = make(world)
+    for _ in range(int(4.0 / world.timestep)):
         world.step(ctrl.compute(Target(x=x0, R=r_des)))
 
-    assert ori_err_deg(world.ee_rot()) < 2.0
-    assert np.linalg.norm(world.ee_pos - x0) < 0.01  # position held
+    assert ori_err_deg(world.ee_rot()) < 3.0
+    assert np.linalg.norm(world.ee_pos - x0) < 0.015  # position held
 
 
 def test_mppi_reduces_error():

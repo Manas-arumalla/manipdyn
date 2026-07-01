@@ -39,7 +39,9 @@ with $a^\*_\text{task} = K_p(x^\*-x) + K_d(\dot x^\*-\dot x)$, and applies
 $\tau = M a + h$. Because the torque map is linear in $a$, actuator limits are
 linear inequality constraints — solved with OSQP. This is the template behind
 modern whole-body controllers, and it degrades gracefully (a damped
-least-squares fallback) if the QP ever fails.
+least-squares fallback) if the QP ever fails. A desired orientation `R` on the
+`Target` stacks the rotation Jacobian so the task becomes full 6-DOF pose
+(opt-in; the position-only QP is unchanged when `R` is omitted).
 
 ## Time-optimal path parameterization
 

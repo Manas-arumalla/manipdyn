@@ -42,6 +42,8 @@ class TSIDController(Controller):
         w_reg: float = 1e-4,
         posture_kp: float = 10.0,
         posture_kd: float = 5.0,
+        kp_rot: float | None = None,
+        kd_rot: float | None = None,
     ):
         super().__init__(world)
         self.kp = kp
@@ -53,27 +55,38 @@ class TSIDController(Controller):
         self.posture_kd = posture_kd
         self.tau_max = world.torque_limits
         self.q_home = world.home_qpos_arm.copy()
+        # Orientation gains (used only when a target orientation is supplied).
+        self.kp_rot = kp if kp_rot is None else kp_rot
+        self.kd_rot = 2.0 * np.sqrt(self.kp_rot) if kd_rot is None else kd_rot
 
     def compute(self, target: Target) -> np.ndarray:
         world = self.world
-        jp, _ = world.ee_jacobian()  # (3, n_arm)
+        jp, jr = world.ee_jacobian()  # each (3, n_arm)
         M = world.mass_matrix()  # (n_arm, n_arm)
         h = world.bias_force()
-        x = world.ee_pos
         v = world.qvel_arm
         xdot = jp @ v
         target_xdot = np.zeros(3) if target.xdot is None else target.xdot
 
-        a_task = self.kp * (target.x - x) + self.kd * (target_xdot - xdot)
+        a_task = self.kp * (target.x - world.ee_pos) + self.kd * (target_xdot - xdot)
+        jac = jp
+
+        # Optional orientation task -> full 6-DOF desired acceleration.
+        if target.R is not None:
+            r_cur, r_des = world.ee_rot(), np.asarray(target.R, dtype=float)
+            e_o = 0.5 * sum(np.cross(r_cur[:, i], r_des[:, i]) for i in range(3))
+            a_task = np.concatenate([a_task, self.kp_rot * e_o - self.kd_rot * (jr @ v)])
+            jac = np.vstack([jp, jr])
+
         a_post = self.posture_kp * (self.q_home - world.qpos_arm) - self.posture_kd * v
 
         # QP in joint acceleration `a`.
         P = (
-            self.w_task * (jp.T @ jp)
+            self.w_task * (jac.T @ jac)
             + self.w_posture * np.eye(self.n_arm)
             + self.w_reg * np.eye(self.n_arm)
         )
-        g = -self.w_task * (jp.T @ a_task) - self.w_posture * a_post
+        g = -self.w_task * (jac.T @ a_task) - self.w_posture * a_post
 
         # Torque-limit constraints: -tau_max <= M a + h <= tau_max.
         lo = -self.tau_max - h
@@ -81,8 +94,8 @@ class TSIDController(Controller):
 
         a = self._solve_qp(P, g, M, lo, hi)
         if a is None:  # fallback: damped least squares + nullspace posture
-            jp_pinv = jp.T @ np.linalg.inv(jp @ jp.T + 1e-4 * np.eye(3))
-            a = jp_pinv @ a_task + (np.eye(self.n_arm) - jp_pinv @ jp) @ a_post
+            j_pinv = jac.T @ np.linalg.inv(jac @ jac.T + 1e-4 * np.eye(jac.shape[0]))
+            a = j_pinv @ a_task + (np.eye(self.n_arm) - j_pinv @ jac) @ a_post
 
         tau = M @ a + h
         return np.clip(tau, -self.tau_max, self.tau_max)

@@ -52,7 +52,9 @@ mapping the task wrench to torque with the **Jacobian transpose**:
 $$ F = K_p (x^\* - x) + K_d (\dot x^\* - \dot x), \qquad \tau = J_p^\top F + h. $$
 No matrix inverse ⇒ graceful near singularities and naturally compliant
 (contact-safe). Trade-off: configuration-dependent apparent inertia and
-steady-state error under sustained load.
+steady-state error under sustained load. A desired orientation `R` on the
+`Target` adds an orientation wrench through $J_r^\top$ (opt-in; position-only
+otherwise).
 
 ## Operational-Space Control (`osc`) — task space
 
