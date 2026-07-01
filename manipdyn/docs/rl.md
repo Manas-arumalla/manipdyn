@@ -37,9 +37,31 @@ be loaded with `stable_baselines3.SAC.load(...)`. This is a deliberately small
 budget to keep the demo fast; longer training and reward shaping push the
 success rate higher.
 
+## Vision-conditioned reaching — `PerceptionReachEnv`
+
+A second environment reaches a cube whose position comes from the overhead RGB-D
+camera (see [perception](perception.md)) rather than privileged state. Each
+episode the cube is placed at a random spot and its pose is estimated from a
+single render at reset; the observation keeps the same 18-D layout, so the goal
+vector `goal - ee` is now *perceived* rather than given.
+
+```bash
+python scripts/train_vision_rl.py --timesteps 25000
+```
+
+SAC, 25k environment steps:
+
+| metric | value |
+|--------|-------|
+| success rate (4 cm) | **75%** (20 random placements) |
+| mean final distance | **46 mm** |
+
+This closes the perception-to-control loop: the same learner reaches an object
+it *sees* under domain randomization.
+
 ## Why it belongs here
 
-It closes the loop on the project's thesis — *compare methods on identical
+It closes the loop on the project's aim — *compare methods on identical
 physics*. The RL policy is evaluated with the same reach scenarios and the same
 end-effector-error metric as the eight classical controllers, so learned and
 model-based control sit on one bench.

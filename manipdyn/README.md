@@ -33,7 +33,7 @@ reproducible scenarios, instead of judging each one from a separate demo.
 | **Control** | PID · Computed-Torque · LQR · **iLQR** · Cartesian Impedance · OSC · **TSID (QP, constrained)** · **MPPI** |
 | **Planning** | RRT · **RRT-Connect** · RRT\* · **Informed RRT\*** · PRM, with collision checking + shortcut/B-spline smoothing |
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
-| **Learning** | a Gymnasium reaching env + an **SAC** baseline, compared against the classical controllers |
+| **Learning** | Gymnasium reaching envs + an **SAC** baseline (state- and vision-conditioned), compared against the classical controllers |
 | **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision instead of ground-truth state; multi-object/clutter |
 | **Parametric** | procedural scene generation with **MjSpec** (random N-cube clutter, deterministic per seed) for domain randomization; a **RobotSpec** de-hardcodes the arm |
 | **Multi-robot** | two UR5e arms in **one shared sim**, independently controlled; a two-arm **cube handover** |
@@ -101,7 +101,9 @@ around the obstacle pillar.
 
 **Learned baseline:** an SAC policy on the same physics reaches **80%** of
 random goals to within 3 cm (mean final error **34 mm**) after 40k steps —
-learned and model-based control on one bench. See [docs/rl.md](docs/rl.md).
+learned and model-based control on one bench. A second, **vision-conditioned**
+policy reaches a cube whose position comes from the camera (75% over random
+placements). See [docs/rl.md](docs/rl.md).
 
 **Perception in the loop**: a simulated overhead RGB-D camera renders depth +
 segmentation, deprojects to a world point cloud, and estimates the cube's grasp

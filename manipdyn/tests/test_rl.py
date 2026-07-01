@@ -39,3 +39,31 @@ def test_reach_env_passes_sb3_checker():
     from stable_baselines3.common.env_checker import check_env
 
     check_env(ReachEnv(seed=0), warn=True)
+
+
+def _perception_env(seed=0):
+    from manipdyn.rl import PerceptionReachEnv
+
+    try:
+        return PerceptionReachEnv(seed=seed)
+    except Exception as exc:  # no GL backend for the camera
+        pytest.skip(f"offscreen GL unavailable: {exc}")
+
+
+def test_perception_reach_env_goal_comes_from_vision():
+    import mujoco
+
+    env = _perception_env(seed=0)
+    obs, _ = env.reset(seed=0)
+    assert obs.shape == (18,) and obs.dtype == np.float32
+    oid = mujoco.mj_name2id(env.world.model, mujoco.mjtObj.mjOBJ_BODY, "object")
+    true_xy = env.world.data.xpos[oid][:2]
+    # The goal is the perceived cube position, close to the true one.
+    assert np.linalg.norm(env.goal[:2] - true_xy) < 0.02
+
+
+def test_perception_reach_env_passes_sb3_checker():
+    pytest.importorskip("stable_baselines3")
+    from stable_baselines3.common.env_checker import check_env
+
+    check_env(_perception_env(seed=0), warn=True)

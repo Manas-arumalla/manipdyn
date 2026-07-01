@@ -37,7 +37,7 @@ the numbers.
 | **Control (8)** | PID · Computed-Torque · LQR · **iLQR** · Cartesian Impedance · OSC · **TSID (constrained QP)** · **MPPI** |
 | **Planning (5)** | RRT · **RRT-Connect** · RRT\* · **Informed RRT\*** · PRM (+ collision checking, shortcut & B-spline smoothing) |
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
-| **Learning** | a Gymnasium reach env + an **SAC** baseline, scored against the classical controllers |
+| **Learning** | Gymnasium reach envs + an **SAC** baseline (state- and vision-conditioned), scored against the classical controllers |
 | **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision, not ground-truth state; multi-object/clutter |
 | **Parametric** | procedural scene generation with **MjSpec** (random clutter, deterministic per seed); a **RobotSpec** de-hardcodes the arm |
 | **Multi-robot** | two UR5e arms in **one shared sim**, independently controlled; a two-arm **cube handover** |
