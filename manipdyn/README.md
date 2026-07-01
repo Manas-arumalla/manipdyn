@@ -101,12 +101,19 @@ around the obstacle pillar.
 random goals to within 3 cm (mean final error **34 mm**) after 40k steps —
 learned and model-based control on one bench. See [docs/rl.md](docs/rl.md).
 
-**Perception in the loop** (`python scripts/make_perception.py`): a simulated
-overhead RGB-D camera renders depth + segmentation, deprojects to a world point
-cloud, and estimates the cube's grasp pose — so the pick-and-place is driven by
-**vision, not ground-truth state**. On randomized placements the perceived pose
-matches truth to **~0.2 mm** and grasps **12/12**, same as the oracle. See
-[docs/perception.md](docs/perception.md).
+**Perception in the loop**: a simulated overhead RGB-D camera renders depth +
+segmentation, deprojects to a world point cloud, and estimates the cube's grasp
+pose — so the pick-and-place is driven by **vision, not ground-truth state**. On
+randomized placements the perceived pose matches truth to **~0.2 mm** and grasps
+**12/12**, same as the oracle. See [docs/perception.md](docs/perception.md).
+
+_Left: the scene. Right: the overhead camera the grasp is planned from (red
+marker = perceived grasp point)._ Rendered by `scripts/make_perception_demo.py`.
+
+![perception-driven pick-and-place](media/perception.gif)
+
+The pipeline itself (`python scripts/make_perception.py`) — overhead RGB, depth,
+the eye-in-hand wrist view, and the deprojected point cloud with the estimate:
 
 ![perception pipeline](benchmarks/results/perception.png)
 

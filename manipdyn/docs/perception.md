@@ -6,6 +6,11 @@ wrist camera render colour, metric depth, and segmentation; the depth is
 deprojected into a world-frame point cloud, and an object's top-down grasp pose
 is estimated from that cloud — no reading of `data.xpos`.
 
+![perception-driven pick-and-place](../media/perception.gif)
+
+_Left: the scene. Right: the overhead camera the grasp is planned from; the red
+marker is the perceived grasp point the arm closes on._
+
 ![perception pipeline](../benchmarks/results/perception.png)
 
 ```python
