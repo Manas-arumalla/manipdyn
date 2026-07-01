@@ -39,6 +39,10 @@ class Target:
     a: np.ndarray | None = None
     x: np.ndarray | None = None
     xdot: np.ndarray | None = None
+    #: Desired end-effector orientation as a 3x3 rotation matrix. Optional;
+    #: task-space controllers that support it track orientation when it is set
+    #: and stay position-only when it is ``None``.
+    R: np.ndarray | None = None
 
 
 class Controller(ABC):

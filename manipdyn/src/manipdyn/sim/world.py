@@ -180,6 +180,10 @@ class World:
     def ee_pos(self) -> np.ndarray:
         return self.data.site_xpos[self.ee_site_id].copy()
 
+    def ee_rot(self) -> np.ndarray:
+        """Rotation matrix of the EE site (3x3); columns are its axes in world."""
+        return self.data.site_xmat[self.ee_site_id].reshape(3, 3).copy()
+
     def ee_jacobian(self) -> tuple[np.ndarray, np.ndarray]:
         """Position and rotation Jacobians of the EE site, arm columns only.
 

@@ -65,6 +65,13 @@ posture task (return toward home) run *without* disturbing the end-effector.
 Gives consistent task-space stiffness; needs $M$, $J$, and an inverse of the
 $3\times3$ task inertia (lightly damped for robustness).
 
+The task is position-only unless the `Target` carries a desired orientation
+`R`, in which case `osc` becomes full **6-DOF pose control**: $J$ stacks the
+position and rotation Jacobians, the orientation error is the column-cross
+residual $e_o=\tfrac12\sum_i r_i\times r_i^\text{des}$, and $\Lambda$ inverts
+the $6\times6$ task inertia. Position-only behaviour (and the benchmark) is
+unchanged when `R` is omitted.
+
 ## Model-Predictive Path Integral (`mppi`) — joint space
 
 Sampling-based MPC. Sample $K$ noisy torque sequences over a horizon $H$, roll
