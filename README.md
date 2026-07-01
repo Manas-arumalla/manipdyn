@@ -43,6 +43,7 @@ the numbers.
 | **Multi-robot** | two UR5e arms in **one shared sim**, independently controlled; a two-arm **cube handover** |
 | **Benchmark** | one command → metrics table + comparison plots, with fair auto-tuned gains |
 | **Tasks** | a complete **pick-and-place** (grasp → base-rotation carry → stable place) |
+| **Task planning** | a symbolic **STRIPS** layer turning declarative goals into pick/place/stack sequences |
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package · typed interfaces · `pytest` suite · headless rendering · ruff · GitHub Actions CI |
 

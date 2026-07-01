@@ -33,6 +33,7 @@ reproducible scenarios, instead of judging each one from a separate demo.
 | **Control** | PID · Computed-Torque · LQR · **iLQR** · Cartesian Impedance · OSC · **TSID (QP, constrained)** · **MPPI** |
 | **Planning** | RRT · **RRT-Connect** · RRT\* · **Informed RRT\*** · PRM, with collision checking + shortcut/B-spline smoothing |
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
+| **Task planning** | a symbolic **STRIPS** layer turning declarative goals into pick/place/stack sequences |
 | **Learning** | Gymnasium reaching envs + an **SAC** baseline (state- and vision-conditioned), compared against the classical controllers |
 | **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision instead of ground-truth state; multi-object/clutter |
 | **Parametric** | procedural scene generation with **MjSpec** (random N-cube clutter, deterministic per seed) for domain randomization; a **RobotSpec** de-hardcodes the arm |
