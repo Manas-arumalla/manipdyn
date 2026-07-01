@@ -141,9 +141,10 @@ def build_two_arm_scene(
     """
     spec = mujoco.MjSpec()
     spec.worldbody.add_geom(
-        name="floor", type=mujoco.mjtGeom.mjGEOM_PLANE, size=[0, 0, 0.05], rgba=[0.3, 0.34, 0.4, 1]
+        name="floor", type=mujoco.mjtGeom.mjGEOM_PLANE, size=[0, 0, 0.05], rgba=[0.5, 0.53, 0.58, 1]
     )
     spec.worldbody.add_light(pos=[0, 0, 2.0], dir=[0, 0, -1])
+    spec.worldbody.add_light(pos=[-0.6, 0.6, 1.6], dir=[0.4, -0.4, -1])
 
     half = separation / 2.0
     for prefix, y, yaw in ((LEFT_PREFIX, half, 0.0), (RIGHT_PREFIX, -half, np.pi)):

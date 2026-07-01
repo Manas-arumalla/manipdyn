@@ -19,6 +19,7 @@ lock-step with each module.
 | [Reinforcement learning](rl.md) | Gymnasium reach env + SAC baseline vs. classical controllers |
 | [Tasks: pick-and-place](tasks.md) | the full grasp → carry → place pipeline |
 | [Perception & vision](perception.md) | RGB-D camera → point cloud → object-pose estimate driving the grasp |
+| [Multi-robot](multi_robot.md) | two UR5e arms in one shared sim; a two-arm cube handover |
 
 ## Architecture (current)
 

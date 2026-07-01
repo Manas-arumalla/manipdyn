@@ -25,6 +25,7 @@ nav:
   - Reinforcement learning: rl.md
   - Tasks (pick-and-place): tasks.md
   - Perception & vision: perception.md
+  - Multi-robot: multi_robot.md
 
 markdown_extensions:
   - admonition

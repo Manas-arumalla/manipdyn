@@ -36,6 +36,7 @@ reproducible scenarios, instead of judging each one from a separate demo.
 | **Learning** | a Gymnasium reaching env + an **SAC** baseline, compared against the classical controllers |
 | **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision instead of ground-truth state; multi-object/clutter |
 | **Parametric** | procedural scene generation with **MjSpec** (random N-cube clutter, deterministic per seed) for domain randomization; a **RobotSpec** de-hardcodes the arm |
+| **Multi-robot** | two UR5e arms in **one shared sim**, independently controlled; a two-arm **cube handover** |
 | **Benchmark** | one command → metrics table + comparison plots, with **fair, auto-tuned gains** |
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package, typed interfaces, `pytest` suite, headless rendering, ruff, GitHub Actions CI |
@@ -117,6 +118,14 @@ The pipeline itself (`python scripts/make_perception.py`) — overhead RGB, dept
 the eye-in-hand wrist view, and the deprojected point cloud with the estimate:
 
 ![perception pipeline](benchmarks/results/perception.png)
+
+**Multi-robot** (`python scripts/make_handover.py`): two UR5e arms in one shared
+simulation, independently controlled. The left arm picks a cube, hands it to the
+right arm mid-air (a weld transfer), and the right arm places it — the arms are
+attached with `MjSpec` under `left_`/`right_` name prefixes and driven per-arm
+through the same `World` interface. See [docs/multi_robot.md](docs/multi_robot.md).
+
+![two-arm handover](media/handover.gif)
 
 ## Architecture
 

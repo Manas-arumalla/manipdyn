@@ -40,6 +40,7 @@ the numbers.
 | **Learning** | a Gymnasium reach env + an **SAC** baseline, scored against the classical controllers |
 | **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision, not ground-truth state; multi-object/clutter |
 | **Parametric** | procedural scene generation with **MjSpec** (random clutter, deterministic per seed); a **RobotSpec** de-hardcodes the arm |
+| **Multi-robot** | two UR5e arms in **one shared sim**, independently controlled; a two-arm **cube handover** |
 | **Benchmark** | one command → metrics table + comparison plots, with fair auto-tuned gains |
 | **Tasks** | a complete **pick-and-place** (grasp → base-rotation carry → stable place) |
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
