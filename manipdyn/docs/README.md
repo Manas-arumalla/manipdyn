@@ -18,6 +18,7 @@ lock-step with each module.
 | [Control center (GUI)](gui.md) | mode-based PySide6 app — Watch Sim (interactive viewer + telemetry) or Run Sim (headless) |
 | [Reinforcement learning](rl.md) | Gymnasium reach env + SAC baseline vs. classical controllers |
 | [Tasks: pick-and-place](tasks.md) | the full grasp → carry → place pipeline |
+| [Perception & vision](perception.md) | RGB-D camera → point cloud → object-pose estimate driving the grasp |
 
 ## Architecture (current)
 
@@ -31,8 +32,9 @@ World (MuJoCo wrapper) ── state, M(q), J, bias, render
    ├── control/     Controller(ABC)    Target    -> arm torque
    │                  pid · ctc · lqr · ilqr · impedance · osc · tsid · mppi
    ├── tuning/      tune_controller    optimize gains (also fair benchmarking)
-   └── planning/    Planner(ABC)       q_start, q_goal -> collision-free path
+   ├── planning/    Planner(ABC)       q_start, q_goal -> collision-free path
    │                  rrt · rrt_connect · rrt_star · informed_rrt_star · prm
+   └── perception/  Camera             depth -> point cloud -> object pose
 ```
 
 Everything is driven through small, typed interfaces (`Target`, `Controller`,

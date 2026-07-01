@@ -38,6 +38,7 @@ the numbers.
 | **Planning (5)** | RRT · **RRT-Connect** · RRT\* · **Informed RRT\*** · PRM (+ collision checking, shortcut & B-spline smoothing) |
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
 | **Learning** | a Gymnasium reach env + an **SAC** baseline, scored against the classical controllers |
+| **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision, not ground-truth state |
 | **Benchmark** | one command → metrics table + comparison plots, with fair auto-tuned gains |
 | **Tasks** | a complete **pick-and-place** (grasp → base-rotation carry → stable place) |
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |

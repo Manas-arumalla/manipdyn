@@ -147,6 +147,13 @@
                       
                       <!-- Pinch Site (EEF) -->
                       <site name="pinch" pos="0 0 0.10" size="0.01" rgba="1 0 0 0.5"/>
+
+                      <!-- Eye-in-hand RGB-D camera looking down the gripper
+                           approach axis (+z, through the pinch). Non-physical:
+                           no mass/DOF/geom, so it cannot affect dynamics; it
+                           sits just past the base front face so the base does
+                           not occlude the view. -->
+                      <camera name="wrist" pos="0 0 0.045" xyaxes="1 0 0 0 -1 0" fovy="75"/>
                     </body>
                     <!-- END GRIPPER -->
                     

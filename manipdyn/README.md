@@ -34,6 +34,7 @@ reproducible scenarios, instead of judging each one from a separate demo.
 | **Planning** | RRT · **RRT-Connect** · RRT\* · **Informed RRT\*** · PRM, with collision checking + shortcut/B-spline smoothing |
 | **Optimization** | iLQR trajectory optimization · time-optimal path parameterization (TOPP) · **black-box controller auto-tuning** |
 | **Learning** | a Gymnasium reaching env + an **SAC** baseline, compared against the classical controllers |
+| **Perception** | a simulated **RGB-D camera** → point cloud → object-pose estimate that drives the grasp from vision instead of ground-truth state |
 | **Benchmark** | one command → metrics table + comparison plots, with **fair, auto-tuned gains** |
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package, typed interfaces, `pytest` suite, headless rendering, ruff, GitHub Actions CI |
@@ -99,6 +100,15 @@ around the obstacle pillar.
 **Learned baseline:** an SAC policy on the same physics reaches **80%** of
 random goals to within 3 cm (mean final error **34 mm**) after 40k steps —
 learned and model-based control on one bench. See [docs/rl.md](docs/rl.md).
+
+**Perception in the loop** (`python scripts/make_perception.py`): a simulated
+overhead RGB-D camera renders depth + segmentation, deprojects to a world point
+cloud, and estimates the cube's grasp pose — so the pick-and-place is driven by
+**vision, not ground-truth state**. On randomized placements the perceived pose
+matches truth to **~0.2 mm** and grasps **12/12**, same as the oracle. See
+[docs/perception.md](docs/perception.md).
+
+![perception pipeline](benchmarks/results/perception.png)
 
 ## Architecture
 

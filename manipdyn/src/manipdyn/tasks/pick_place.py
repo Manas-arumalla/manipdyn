@@ -46,8 +46,15 @@ class PickPlacePlan:
     cube_xy: np.ndarray
 
 
-def solve(world: World) -> PickPlacePlan:
-    """Solve the grasp/approach/place configurations for the current scene."""
+def solve(world: World, object_xy: np.ndarray | None = None) -> PickPlacePlan:
+    """Solve the grasp/approach/place configurations for the current scene.
+
+    ``object_xy`` optionally overrides the cube's ``(x, y)`` — pass a perceived
+    position (see :func:`manipdyn.perception.sense_object_pose`) to drive the
+    grasp from vision instead of the simulator's ground-truth pose. Left
+    ``None`` (the default), the true object position is used, so existing
+    callers are unaffected.
+    """
     m, d = world.model, world.data
     sid = world.ee_site_id
     oid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "object")
@@ -59,6 +66,8 @@ def solve(world: World) -> PickPlacePlan:
         d.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, jn)]] = GRIP_OPEN
     mujoco.mj_forward(m, d)
     obj = d.xpos[oid].copy()
+    if object_xy is not None:
+        obj[:2] = np.asarray(object_xy, dtype=float)
 
     def fk(q):
         world.set_arm_qpos(q)
