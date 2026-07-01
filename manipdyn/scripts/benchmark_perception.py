@@ -3,8 +3,8 @@
 For each randomized cube position on the pick table, runs the full pick-and-place
 twice — once from the ground-truth pose (oracle) and once from the pose estimated
 by the overhead RGB-D camera (perception) — and reports grasp success, place
-error, and the perception error that drives the gap. This is the "does vision
-cost us anything?" axis of the lab's fair-comparison thesis.
+error, and the perception error that drives the gap. This measures the cost of
+using vision in place of privileged state, on identical physics.
 
 Run from the manipdyn/ directory:
     python scripts/benchmark_perception.py --trials 12

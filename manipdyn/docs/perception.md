@@ -47,7 +47,7 @@ plan = pick_place.solve(world, object_xy=est.top_xy)   # grasp what we see
    oblique view — its extremes are set by the object's edges, so it is not
    pulled toward the camera the way a raw centroid is by foreshortening.
 
-## Two honest segmentation modes
+## Two segmentation modes
 
 `sense_object_pose(cam, segmentation=...)`:
 
@@ -64,8 +64,8 @@ plan = pick_place.solve(world, object_xy=est.top_xy)   # grasp what we see
 
 `scripts/benchmark_perception.py` runs the full pick-and-place from the
 ground-truth pose (oracle) and from the estimated pose (perception) over
-randomized cube placements, on the same physics and the same success test —
-the lab's fair-comparison thesis applied to perception:
+randomized cube placements, on the same physics and the same success test, so
+the cost of using vision instead of privileged state is measured directly:
 
 | driver | grasp success | mean place err |
 |--------|--------------:|---------------:|
@@ -118,8 +118,7 @@ perception/RL over scenes nobody had to write MJCF for.
 
 * It replaces the **oracle object pose** with a *sensed* one — the grasp is
   driven by vision.
-* It does **not** change the grasp physics: the cube is still held by a weld set
-  at grasp time (see [tasks](tasks.md)). Contact-based grasping is a separate
-  follow-on.
+* It is independent of how the cube is held: the grasp can use a weld (default)
+  or a real contact grasp (`use_weld=False`), described in [tasks](tasks.md).
 * The two scene cameras are **non-physical** — no mass, DOF, or geometry — so
-  adding them cannot alter any existing dynamics, controller, or benchmark.
+  adding them does not alter any existing dynamics, controller, or benchmark.

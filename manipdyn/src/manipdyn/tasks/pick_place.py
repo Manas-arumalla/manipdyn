@@ -11,7 +11,8 @@ Pipeline (see ``docs/tasks.md`` for the why):
     slides straight down around the cube without knocking it;
   * the place config is the pick config with the base joint rotated 90°, which
     maps the pick table onto the place table exactly;
-  * a weld (its relative pose set at grasp time) carries the cube rigidly.
+  * the cube is carried either by a weld (its relative pose set at grasp time)
+    or by a real contact grasp on the closed fingers — see :func:`run`.
 """
 
 from __future__ import annotations
@@ -155,8 +156,7 @@ def run(world: World, plan: PickPlacePlan | None = None, use_weld: bool = True) 
 
     ``use_weld`` (default) rigidly holds the cube with a weld while it is carried
     — robust and deterministic. Set it ``False`` for a **real contact grasp**:
-    the fingers close and the cube is held by friction alone (no weld), which is
-    the honest, physical grasp.
+    the fingers close and the cube is held by friction alone (no weld).
     """
     plan = plan or solve(world)
     m, d = world.model, world.data

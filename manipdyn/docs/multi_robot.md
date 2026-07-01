@@ -1,7 +1,7 @@
 # Multi-robot
 
 Two UR5e arms can run in **one shared simulation**, each independently
-controlled — built on the [`RobotSpec`](#) abstraction and `mujoco.MjSpec`.
+controlled — built on the `RobotSpec` abstraction and `mujoco.MjSpec`.
 
 ![two-arm handover](../media/handover.gif)
 

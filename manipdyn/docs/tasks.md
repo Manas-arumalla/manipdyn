@@ -43,8 +43,8 @@ is picked off one table, carried, and placed on a second table.
 
 A 50 mm cube on a small table. Being compact, it is gripped about its centre
 and cannot topple, and a second identical table at the base-rotated location
-receives it — a clear, honest pick-and-place rather than a fragile balancing
-act.
+receives it — a clean, self-contained pick-and-place rather than a fragile
+balancing act.
 
 ## Design notes
 

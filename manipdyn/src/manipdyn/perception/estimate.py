@@ -8,7 +8,7 @@ object's edges, so it is not pulled toward the camera the way a raw centroid is
 under oblique foreshortening.
 
 ``sense_object_pose`` wires a :class:`~manipdyn.perception.camera.Camera`
-through the cloud pipeline. Two honest modes:
+through the cloud pipeline. Two modes:
 
 * ``segmentation=True`` (default) uses MuJoCo's ground-truth segmentation buffer
   to select the object's pixels — a stand-in for a perfect instance segmenter.
