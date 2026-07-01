@@ -17,19 +17,11 @@ import mujoco
 import numpy as np
 
 from manipdyn.models import scene_path
+from manipdyn.sim.robot import UR5E, RobotSpec
 
-# The six revolute joints of the UR5e, in kinematic order.
-ARM_JOINT_NAMES: tuple[str, ...] = (
-    "shoulder_pan_joint",
-    "shoulder_lift_joint",
-    "elbow_joint",
-    "wrist_1_joint",
-    "wrist_2_joint",
-    "wrist_3_joint",
-)
-
-# Candidate end-effector site names, in priority order.
-_EE_SITE_CANDIDATES = ("attachment_site", "eef_site", "pinch")
+# Backwards-compatible alias: the UR5e arm joints, in kinematic order. New code
+# should reach for a :class:`RobotSpec`; this is kept for existing imports.
+ARM_JOINT_NAMES: tuple[str, ...] = UR5E.arm_joint_names
 
 
 class World:
@@ -42,6 +34,9 @@ class World:
         the package, or an absolute path to any MJCF file.
     timestep:
         Optional override for the integrator timestep (seconds).
+    robot:
+        Which arm to drive. Defaults to the UR5e (:data:`UR5E`); pass another
+        :class:`RobotSpec` to load a different manipulator's joints/home.
     """
 
     def __init__(
@@ -49,6 +44,7 @@ class World:
         scene: str = "scene_base",
         timestep: float | None = None,
         ee_site: str | None = None,
+        robot: RobotSpec = UR5E,
     ):
         # Accept either a bundled scene name or a direct path to any MJCF file.
         if os.path.isfile(scene):
@@ -62,6 +58,7 @@ class World:
         if timestep is not None:
             self.model.opt.timestep = float(timestep)
 
+        self.robot = robot
         self._ee_site_override = ee_site
         self._discover_arm()
         self._discover_ee_site()
@@ -72,7 +69,7 @@ class World:
         """Locate arm joints/DOFs/actuators by name (robust to a gripper)."""
         m = self.model
         joint_ids, qpos_adr, dof_adr = [], [], []
-        for name in ARM_JOINT_NAMES:
+        for name in self.robot.arm_joint_names:
             jid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, name)
             if jid == -1:
                 continue
@@ -81,7 +78,9 @@ class World:
             dof_adr.append(int(m.jnt_dofadr[jid]))
 
         if not joint_ids:
-            raise RuntimeError("No UR5e arm joints found in model; is this a UR5e scene?")
+            raise RuntimeError(
+                f"No {self.robot.name} arm joints found in model; is this the right scene/robot?"
+            )
 
         self.arm_joint_ids = np.array(joint_ids, dtype=int)
         self.arm_qpos_adr = np.array(qpos_adr, dtype=int)
@@ -119,11 +118,8 @@ class World:
         m = self.model
         self.ee_site_id = -1
         self.ee_site_name = None
-        candidates = (
-            (self._ee_site_override, *_EE_SITE_CANDIDATES)
-            if self._ee_site_override
-            else _EE_SITE_CANDIDATES
-        )
+        base = self.robot.ee_site_candidates
+        candidates = (self._ee_site_override, *base) if self._ee_site_override else base
         for name in candidates:
             sid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, name)
             if sid != -1:
@@ -131,7 +127,7 @@ class World:
                 self.ee_site_name = name
                 break
         if self.ee_site_id == -1:
-            raise RuntimeError(f"No end-effector site found (tried {_EE_SITE_CANDIDATES}).")
+            raise RuntimeError(f"No end-effector site found (tried {base}).")
 
     # ----------------------------------------------------------------- basics
     @property
@@ -144,8 +140,8 @@ class World:
 
     @property
     def home_qpos_arm(self) -> np.ndarray:
-        """A sane elbow-up home configuration for the 6 arm joints."""
-        return np.array([0.0, -1.5708, 1.5708, -1.5708, -1.5708, 0.0])
+        """A sane home configuration for the arm joints (from the robot spec)."""
+        return np.array(self.robot.home_qpos, dtype=float)
 
     def reset_home(self) -> None:
         self.reset(self.home_qpos_arm)

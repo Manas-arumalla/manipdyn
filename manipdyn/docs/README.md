@@ -23,7 +23,7 @@ lock-step with each module.
 ## Architecture (current)
 
 ```
-World (MuJoCo wrapper) ── state, M(q), J, bias, render
+World (MuJoCo wrapper) ── state, M(q), J, bias, render   (arm via RobotSpec)
    │
    ├── kinematics/  IKSolver           target_x  -> q
    ├── dynamics/    linearize()        (A, B) for LQR
