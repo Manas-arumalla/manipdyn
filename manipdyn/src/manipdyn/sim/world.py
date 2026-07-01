@@ -23,6 +23,27 @@ from manipdyn.sim.robot import UR5E, RobotSpec
 # should reach for a :class:`RobotSpec`; this is kept for existing imports.
 ARM_JOINT_NAMES: tuple[str, ...] = UR5E.arm_joint_names
 
+# MuJoCo changed mj_fullM's signature across releases: up to 3.8 it is
+# ``mj_fullM(m, dst, qM)``; from 3.9 it is ``mj_fullM(m, d, dst)``. Detect which
+# form the installed build accepts once, then reuse it.
+_MJ_FULLM_TAKES_DATA: bool | None = None
+
+
+def _fill_full_inertia(model: mujoco.MjModel, data: mujoco.MjData, dst: np.ndarray) -> None:
+    """Write the dense joint-space inertia matrix into ``dst`` (version-robust)."""
+    global _MJ_FULLM_TAKES_DATA
+    if _MJ_FULLM_TAKES_DATA is None:
+        try:
+            mujoco.mj_fullM(model, dst, data.qM)
+            _MJ_FULLM_TAKES_DATA = False
+            return
+        except TypeError:
+            _MJ_FULLM_TAKES_DATA = True
+    if _MJ_FULLM_TAKES_DATA:
+        mujoco.mj_fullM(model, data, dst)
+    else:
+        mujoco.mj_fullM(model, dst, data.qM)
+
 
 class World:
     """A loaded UR5e MuJoCo model plus convenience accessors.
@@ -212,7 +233,7 @@ class World:
     def mass_matrix(self) -> np.ndarray:
         """Joint-space inertia matrix M(q) restricted to the arm DOFs."""
         full = np.zeros((self.model.nv, self.model.nv))
-        mujoco.mj_fullM(self.model, full, self.data.qM)
+        _fill_full_inertia(self.model, self.data, full)
         idx = self.arm_dof_adr
         return full[np.ix_(idx, idx)]
 
