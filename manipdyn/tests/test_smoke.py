@@ -29,6 +29,30 @@ def test_mass_matrix_and_jacobian_shapes():
     assert jp.shape == (3, 6) and jr.shape == (3, 6)
 
 
+def test_position_jacobian_matches_finite_difference():
+    """The analytic EE position Jacobian agrees with a central finite difference."""
+    world = World(scene="scene_base")
+    q0 = np.array([0.2, -1.4, 1.3, -1.5, -1.4, 0.3])
+    world.set_arm_qpos(q0)
+    world.forward()
+    jp, _ = world.ee_jacobian()
+
+    eps = 1e-6
+    jp_fd = np.zeros((3, world.n_arm))
+    for j in range(world.n_arm):
+        dq = q0.copy()
+        dq[j] += eps
+        world.set_arm_qpos(dq)
+        world.forward()
+        x_plus = world.ee_pos
+        dq[j] = q0[j] - eps
+        world.set_arm_qpos(dq)
+        world.forward()
+        jp_fd[:, j] = (x_plus - world.ee_pos) / (2 * eps)
+
+    assert np.allclose(jp, jp_fd, atol=1e-5)
+
+
 def test_offscreen_render_produces_frame():
     pytest.importorskip("mujoco")
     from manipdyn.render import Recorder

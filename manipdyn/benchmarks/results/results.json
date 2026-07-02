@@ -8,7 +8,7 @@
       "rmse_mm": 73.73043678226081,
       "effort": 6936.993240118991,
       "peak_torque_nm": 875.3274153771426,
-      "compute_ms": 0.006732355559910906
+      "compute_ms": 0.007727488884686156
     },
     {
       "controller": "ctc",
@@ -18,7 +18,7 @@
       "rmse_mm": 71.58543770548371,
       "effort": 5965.924863821122,
       "peak_torque_nm": 523.4380962375034,
-      "compute_ms": 0.011415200019352293
+      "compute_ms": 0.01324804445013999
     },
     {
       "controller": "lqr",
@@ -28,7 +28,7 @@
       "rmse_mm": 80.44846573299043,
       "effort": 2170.604123306406,
       "peak_torque_nm": 351.69246780601435,
-      "compute_ms": 0.00905142223079262
+      "compute_ms": 0.01518137777262988
     },
     {
       "controller": "ilqr",
@@ -38,7 +38,7 @@
       "rmse_mm": 75.02464436240452,
       "effort": 2210.102763362143,
       "peak_torque_nm": 219.66297063790023,
-      "compute_ms": 0.10401733333613568
+      "compute_ms": 0.1317523111004751
     },
     {
       "controller": "impedance",
@@ -48,7 +48,7 @@
       "rmse_mm": 71.08848536459224,
       "effort": 4187.941806813804,
       "peak_torque_nm": 485.66315918266287,
-      "compute_ms": 0.009254200014563847
+      "compute_ms": 0.013124044436052728
     },
     {
       "controller": "osc",
@@ -58,7 +58,7 @@
       "rmse_mm": 67.25850116186326,
       "effort": 6930.871654571652,
       "peak_torque_nm": 796.8812050430103,
-      "compute_ms": 0.03555724443504005
+      "compute_ms": 0.054058777775935596
     },
     {
       "controller": "tsid",
@@ -68,7 +68,7 @@
       "rmse_mm": 66.57612514646446,
       "effort": 2282.1489340896733,
       "peak_torque_nm": 232.787779014752,
-      "compute_ms": 1.0164975333431763
+      "compute_ms": 1.409208933330471
     },
     {
       "controller": "mppi",
@@ -78,14 +78,14 @@
       "rmse_mm": 149.84338692527388,
       "effort": 1758.059490558788,
       "peak_torque_nm": 76.0389511777664,
-      "compute_ms": 18.207172266636917
+      "compute_ms": 26.281471444447863
     }
   ],
   "planners": [
     {
       "planner": "rrt",
       "success_rate": 1.0,
-      "plan_time_s": 0.008022440000422649,
+      "plan_time_s": 0.012227319999874453,
       "path_len_rad": 1.6130479111444675,
       "raw_nodes": 11.6,
       "collision_free": true
@@ -93,7 +93,7 @@
     {
       "planner": "rrt_connect",
       "success_rate": 1.0,
-      "plan_time_s": 0.01057784000004176,
+      "plan_time_s": 0.01714845999995305,
       "path_len_rad": 1.6863650331662974,
       "raw_nodes": 14.6,
       "collision_free": true
@@ -101,7 +101,7 @@
     {
       "planner": "rrt_star",
       "success_rate": 1.0,
-      "plan_time_s": 10.375525019999623,
+      "plan_time_s": 12.923241499999131,
       "path_len_rad": 1.5716763121926924,
       "raw_nodes": 6.2,
       "collision_free": true
@@ -109,7 +109,7 @@
     {
       "planner": "informed_rrt_star",
       "success_rate": 1.0,
-      "plan_time_s": 20.590028580000215,
+      "plan_time_s": 24.54097903999973,
       "path_len_rad": 1.4248812291810231,
       "raw_nodes": 5.4,
       "collision_free": true
@@ -117,7 +117,7 @@
     {
       "planner": "prm",
       "success_rate": 1.0,
-      "plan_time_s": 6.10386929999986,
+      "plan_time_s": 6.702076799999486,
       "path_len_rad": 5.316497638566604,
       "raw_nodes": 3.8,
       "collision_free": true

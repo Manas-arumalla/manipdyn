@@ -48,6 +48,39 @@ the numbers.
 | **GUI** | a mode-based PySide6 control center — Watch Sim (interactive MuJoCo viewer + live telemetry) or Run Sim (headless results) across every mode |
 | **Engineering** | installable package · typed interfaces · `pytest` suite · headless rendering · ruff · GitHub Actions CI |
 
+## Results
+
+Every method is scored on the **same** auto-tuned scenarios, so the comparison is
+fair. Regenerate the whole table with **`manipdyn bench`**.
+
+**Controllers** — three reach targets on `scene_base`, tuned gains, scored by
+end-effector error:
+
+| controller | success | final err | settle | RMSE¹ | effort ‖τ‖² | compute |
+|------------|:-------:|----------:|-------:|------:|------------:|--------:|
+| computed-torque | 3/3 | **8e-13 mm** | 0.23 s | 72 mm | 6.0e3 | 0.013 ms |
+| lqr | 3/3 | 2e-8 mm | 0.34 s | 80 mm | 2.2e3 | 0.015 ms |
+| osc | 3/3 | 0.008 mm | **0.18 s** | 67 mm | 6.9e3 | 0.054 ms |
+| tsid | 3/3 | 0.025 mm | 0.20 s | **67 mm** | 2.3e3 | 1.41 ms |
+| ilqr | 3/3 | 0.011 mm | 0.29 s | 75 mm | 2.2e3 | 0.13 ms |
+| pid | 3/3 | 0.23 mm | 0.26 s | 74 mm | 6.9e3 | **0.008 ms** |
+| impedance | 3/3 | 2.9 mm | 0.55 s | 71 mm | 4.2e3 | 0.013 ms |
+| mppi | 2/3 | 13.2 mm | 2.12 s | 150 mm | **1.8e3** | 26.3 ms |
+
+**Planners** — a blocked start/goal query on `scene_obstacle` (straight-line
+motion collides); every planner finds a collision-free detour:
+
+| planner | success | plan time | path length |
+|---------|:-------:|----------:|------------:|
+| RRT | 5/5 | **12 ms** | 1.61 rad |
+| RRT-Connect | 5/5 | 17 ms | 1.69 rad |
+| RRT\* | 5/5 | 12.9 s | 1.57 rad |
+| Informed RRT\* | 5/5 | 24.5 s | **1.42 rad** |
+| PRM | 5/5 | 6.7 s | 5.32 rad |
+
+<sub>¹ RMSE is taken over the whole reach, so it reflects the approach transient,
+not the steady-state error (the "final err" column).</sub>
+
 ## Quickstart
 
 ```bash
@@ -73,21 +106,9 @@ for _ in range(1500):
 print("final joint error:", np.linalg.norm(goal - world.qpos_arm))
 ```
 
-## Benchmark results
+## Benchmark plots
 
-Reach scenarios on the UR5e, **tuned gains**, scored by end-effector error.
-Regenerate any time with `manipdyn bench`.
-
-| controller | final err | settle | effort ‖τ‖² | compute |
-|------------|----------:|-------:|------------:|--------:|
-| computed-torque | **8e-13 mm** | 0.23 s | 6.0e3 | 0.014 ms |
-| lqr | 2e-8 mm | 0.34 s | 2.2e3 | 0.010 ms |
-| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.048 ms |
-| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.02 ms |
-| ilqr | 0.01 mm | 0.29 s | 2.2e3 | 0.12 ms |
-| pid | 0.23 mm | 0.26 s | 6.9e3 | **0.008 ms** |
-| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.013 ms |
-| mppi | 13.2 mm | 2.1 s | **1.8e3** | 18.2 ms |
+The same comparison, plotted (regenerate with `manipdyn bench`):
 
 <img src="manipdyn/benchmarks/results/controllers.png" width="80%" alt="controller benchmark"/>
 

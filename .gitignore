@@ -33,6 +33,7 @@ Thumbs.db
 # Working notes (not part of the published project)
 MEMORY.md
 memory/
+[0-9][0-9]-*.md
 
 # Generated runtime artifacts from the original prototype
 Manipulator Test/sim_config.json

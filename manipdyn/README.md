@@ -2,11 +2,11 @@
 
 **A MuJoCo-physics lab for 6-DOF manipulator planning and control** — a benchmarked zoo of 8 controllers and 5 motion planners on the UR5e, with trajectory optimization, automatic gain tuning, a reinforcement-learning baseline, and an interactive control center.
 
+[![CI](https://github.com/Manas-arumalla/manipdyn/actions/workflows/ci.yml/badge.svg)](https://github.com/Manas-arumalla/manipdyn/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![MuJoCo](https://img.shields.io/badge/MuJoCo-3.x-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
-![Style](https://img.shields.io/badge/lint-ruff-purple.svg)
+![Lint](https://img.shields.io/badge/lint-ruff-purple.svg)
 
 <p float="left">
   <img src="media/pick_place.gif" width="60%" alt="pick and place"/>
@@ -71,19 +71,36 @@ manipdyn gui          # launch the control center
 
 ## Benchmark results
 
-Reach scenarios on `scene_base`, **tuned gains**, scored by end-effector error.
-Regenerate with `manipdyn bench`.
+Every method is scored on the **same** auto-tuned scenarios. Regenerate the whole
+table with `manipdyn bench`.
 
-| controller | final err | settle | effort ‖τ‖² | compute |
-|------------|----------:|-------:|------------:|--------:|
-| computed-torque | **8e-13 mm** | 0.23 s | 6.0e3 | 0.014 ms |
-| lqr | 2e-8 mm | 0.34 s | 2.2e3 | 0.010 ms |
-| osc | 0.008 mm | **0.18 s** | 6.9e3 | 0.048 ms |
-| tsid | 0.025 mm | 0.20 s | 2.3e3 | 1.02 ms |
-| ilqr | 0.01 mm | 0.29 s | 2.2e3 | 0.12 ms |
-| pid | 0.23 mm | 0.26 s | 6.9e3 | **0.008 ms** |
-| impedance | 2.93 mm | 0.55 s | 4.2e3 | 0.013 ms |
-| mppi | 13.2 mm | 2.1 s | **1.8e3** | 18.2 ms |
+**Controllers** — three reach targets on `scene_base`, tuned gains, scored by
+end-effector error:
+
+| controller | success | final err | settle | RMSE¹ | effort ‖τ‖² | compute |
+|------------|:-------:|----------:|-------:|------:|------------:|--------:|
+| computed-torque | 3/3 | **8e-13 mm** | 0.23 s | 72 mm | 6.0e3 | 0.013 ms |
+| lqr | 3/3 | 2e-8 mm | 0.34 s | 80 mm | 2.2e3 | 0.015 ms |
+| osc | 3/3 | 0.008 mm | **0.18 s** | 67 mm | 6.9e3 | 0.054 ms |
+| tsid | 3/3 | 0.025 mm | 0.20 s | **67 mm** | 2.3e3 | 1.41 ms |
+| ilqr | 3/3 | 0.011 mm | 0.29 s | 75 mm | 2.2e3 | 0.13 ms |
+| pid | 3/3 | 0.23 mm | 0.26 s | 74 mm | 6.9e3 | **0.008 ms** |
+| impedance | 3/3 | 2.9 mm | 0.55 s | 71 mm | 4.2e3 | 0.013 ms |
+| mppi | 2/3 | 13.2 mm | 2.12 s | 150 mm | **1.8e3** | 26.3 ms |
+
+**Planners** — a blocked start/goal query on `scene_obstacle`; every planner
+finds a collision-free detour:
+
+| planner | success | plan time | path length |
+|---------|:-------:|----------:|------------:|
+| RRT | 5/5 | **12 ms** | 1.61 rad |
+| RRT-Connect | 5/5 | 17 ms | 1.69 rad |
+| RRT\* | 5/5 | 12.9 s | 1.57 rad |
+| Informed RRT\* | 5/5 | 24.5 s | **1.42 rad** |
+| PRM | 5/5 | 6.7 s | 5.32 rad |
+
+<sub>¹ RMSE is over the whole reach (approach transient included), not the
+steady-state error in the "final err" column.</sub>
 
 ![controller benchmark](benchmarks/results/controllers.png)
 

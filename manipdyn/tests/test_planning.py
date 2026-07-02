@@ -40,6 +40,24 @@ def test_planner_returns_collision_free_path(planner_cls):
     assert all(not planner.checker.in_collision(q) for q in path), "path has a colliding node"
 
 
+def test_planned_path_within_limits_and_edges_collision_free():
+    """A path must respect joint limits and be collision-free along its edges,
+    not just at the waypoints."""
+    world = World(scene="scene")
+    planner = RRTConnect(world, seed=0, max_iter=5000)
+    path = planner.plan(Q_START, Q_GOAL)
+    assert path is not None
+
+    lo, hi = world.joint_limits[:, 0], world.joint_limits[:, 1]
+    assert np.all(path >= lo - 1e-6) and np.all(path <= hi + 1e-6), "waypoint outside joint limits"
+
+    checker = planner.checker
+    for a, b in zip(path[:-1], path[1:], strict=False):
+        n = max(2, int(np.linalg.norm(b - a) / 0.05) + 1)
+        for t in np.linspace(0.0, 1.0, n):
+            assert not checker.in_collision((1 - t) * a + t * b), "edge passes through collision"
+
+
 def test_endpoints_in_collision_returns_none():
     world = World(scene="scene")
     planner = RRTConnect(world, seed=0)
