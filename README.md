@@ -21,6 +21,8 @@
 
 ---
 
+> **Related:** [openarm-control](https://github.com/Manas-arumalla/openarm-control) — the bimanual follow-up: these manipulation methods scaled to a 2×7-DOF OpenArm v2 platform with learned policies.
+
 ## Why I built this
 
 I wanted one place to implement the classical and modern manipulator methods
