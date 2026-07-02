@@ -25,13 +25,13 @@ Cartesian set-point.
 | controller | final err (mm) | settle (s) | effort ‖τ‖² | peak τ (Nm) | compute (ms) |
 |------------|---------------:|-----------:|------------:|------------:|-------------:|
 | pid        | 0.23   | 0.26 | 6.9e3 | 875  | 0.008 |
-| ctc        | 8e-13  | 0.23 | 6.0e3 | 523  | 0.014 |
-| lqr        | 2e-8   | 0.34 | 2.2e3 | 352  | 0.010 |
-| ilqr       | 0.01   | 0.29 | 2.2e3 | 220  | 0.12  |
+| ctc        | 8e-13  | 0.23 | 6.0e3 | 523  | 0.013 |
+| lqr        | 2e-8   | 0.34 | 2.2e3 | 352  | 0.015 |
+| ilqr       | 0.01   | 0.29 | 2.2e3 | 220  | 0.13  |
 | impedance  | 2.93   | 0.55 | 4.2e3 | 486  | 0.013 |
-| osc        | 0.008  | 0.18 | 6.9e3 | 797  | 0.048 |
-| tsid       | 0.025  | 0.20 | 2.3e3 | 233  | 1.02  |
-| mppi       | 13.2   | 2.12 | 1.8e3 | 76   | 18.2  |
+| osc        | 0.008  | 0.18 | 6.9e3 | 797  | 0.054 |
+| tsid       | 0.025  | 0.20 | 2.3e3 | 233  | 1.41  |
+| mppi       | 13.2   | 2.12 | 1.8e3 | 76   | 26.3  |
 
 What the numbers say:
 
@@ -39,11 +39,11 @@ What the numbers say:
   nm-scale residual) — exact feedback linearization and optimal linear feedback
   on a well-modeled arm.
 * **OSC and TSID** settle fastest in task space; **TSID** does so with low
-  torque and *guaranteed* limit satisfaction, but pays ~1.3 ms/step for the QP.
+  torque and *guaranteed* limit satisfaction, but pays ~1.4 ms/step for the QP.
 * **PID** is the cheapest to compute (~8 µs) and perfectly serviceable.
 * **Impedance** leaves a few-mm steady-state error — expected for a
   Jacobian-transpose spring without inertia shaping.
-* **MPPI** is the most expensive (~18 ms/step) and least precise here — it even
+* **MPPI** is the most expensive (~26 ms/step) and least precise here — it even
   misses the 2 cm tolerance on the hardest goal — but uses the *least peak
   torque*: the gradient-free sampler trades accuracy and compute for generality
   and needs no model derivatives.
@@ -60,11 +60,11 @@ has to find a detour up and over it.
 
 | planner | success | plan time (s) | path len (rad) | nodes |
 |---------|--------:|--------------:|---------------:|------:|
-| rrt | 1.0 | 0.016 | 1.61 | 12 |
-| rrt_connect | 1.0 | 0.020 | 1.69 | 15 |
-| rrt_star | 1.0 | 16.4 | 1.57 | 6 |
-| informed_rrt_star | 1.0 | 21.4 | **1.42** | 5 |
-| prm | 1.0 | 6.35 | 5.32 | 4 |
+| rrt | 1.0 | 0.012 | 1.61 | 12 |
+| rrt_connect | 1.0 | 0.017 | 1.69 | 15 |
+| rrt_star | 1.0 | 12.9 | 1.57 | 6 |
+| informed_rrt_star | 1.0 | 24.5 | **1.42** | 5 |
+| prm | 1.0 | 6.7 | 5.32 | 4 |
 
 All five solve it. **RRT and RRT-Connect** return a feasible path in ~20 ms.
 **RRT\*** and **Informed RRT\*** spend seconds rewiring to shrink cost, and
