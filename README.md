@@ -4,12 +4,11 @@
 
 **A MuJoCo-physics lab for the UR5e: a benchmarked zoo of 8 controllers and 5 motion planners, with trajectory optimization, automatic gain tuning, a reinforcement-learning baseline, an interactive control center, and a full pick-and-place — all behind one clean, tested, documented package.**
 
+[![CI](https://github.com/Manas-arumalla/manipdyn/actions/workflows/ci.yml/badge.svg)](https://github.com/Manas-arumalla/manipdyn/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![MuJoCo](https://img.shields.io/badge/MuJoCo-3.x-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Tests](https://img.shields.io/badge/tests-39%20passing-brightgreen.svg)
 ![Lint](https://img.shields.io/badge/lint-ruff-purple.svg)
-![CI](https://img.shields.io/badge/CI-GitHub%20Actions-blue.svg)
 
 <img src="manipdyn/media/pick_place.gif" width="58%" alt="pick and place"/>
 <br/>
